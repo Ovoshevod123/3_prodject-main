@@ -254,11 +254,11 @@ async def new_3(message: Message, state: FSMContext):
 @rt.message(new_product.price)
 async def new_5(message: Message, state: FSMContext):
     if message.content_type != types.ContentType.TEXT:
-        await message.answer(text='Пришлите текст!', reply_markup=types.ReplyKeyboardRemove())
+        await message.answer(text='Пришлите текст!')
     else:
         await state.update_data(price=message.text)
         await state.set_state(new_product.description)
-        await message.answer(text='Введите описание товара:')
+        await message.answer(text='Введите описание товара:', reply_markup=types.ReplyKeyboardRemove())
 
 @rt.message(new_product.description)
 async def new_4(message: Message, state: FSMContext):
@@ -328,7 +328,7 @@ async def send_0(callback: CallbackQuery, bot: Bot):
         media = [types.InputMediaPhoto(media=photo[0], caption=text, parse_mode="HTML")]
 
     send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media)
-    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}', parse_mode="HTML", reply_to=2)
+    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}', parse_mode="HTML")
 
     a = ''
     for i in data_state['photo']:
@@ -488,6 +488,15 @@ async def back_edit(call: CallbackQuery, bot: Bot):
     photo_ = photo_[0]
     photo_ = photo_.split('|')
     photo_.pop(0)
+
+    if name[0][5] == 'None':
+        price = ''
+    else:
+        if name[0][5].isdigit() == True:
+            price = f"<b>{name[0][5]} ₽</b>\n"
+        else:
+            price = f"<b>{name[0][5]}</b>\n"
+
     col = len(photo_)
     try:
         for i in range(col):
@@ -496,8 +505,9 @@ async def back_edit(call: CallbackQuery, bot: Bot):
             await bot.delete_message(chat_id=CHANNEL_ID, message_id=ii)
     except:
         average = await average_rating(name[0][8])
-        text = (f"«УДАЛЕННО<b>{name[0][3]}</b>УДАЛЕННО»\n"
-                f"<b>{name[0][5]} ₽</b>\n"
+        text = (f"<b>❗ ЭТО ОБЪЯВЛЕНИЕ УДАЛЕННО ❗</b>\n\n"
+                f"«🗑DEL<b>{name[0][3]}</b>DEL🗑»\n"
+                f"{price}"
                 f"{name[0][4]}\n"
                 f"{name[0][6]} 📍\n\n"
                 f"@{name[0][8]}\n"
@@ -676,13 +686,11 @@ async def edit_photo_2(call: CallbackQuery, bot: Bot):
     await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=call_data, caption=text, parse_mode="HTML")
     a = await call.message.edit_text(text='✏️ Объявление изменено')
     await edit_def(edit_list[0][0], edit_list[0][1], call_data)
-    print(edit_list)
     await start_def(call.message)
     await asyncio.sleep(3)
     await a.delete()
 
 async def send_media(message, user, what_edit, edit):
-    # получать текст из бд и менять его здесь по id что нужно изменить, потом вносить изменение в бд при подтверждении, с ред. фото все ок
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT * FROM users_offer WHERE offer_id_channel = '{call_data}'")

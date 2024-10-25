@@ -36,30 +36,41 @@ async def creat_2(invoice):
         return False
 
 async def payment_question(message, button_data):
-    print(button_data)
     rows = [[InlineKeyboardButton(text="Оплатить Crypto Bot", callback_data=f'{button_data}_pay')],
             [InlineKeyboardButton(text='Оплатить внутренним счетом', callback_data=f'{button_data}_loc')]]
     if button_data == 'dispatch':
         rows.insert(2, [InlineKeyboardButton(text='‹ Назад', callback_data='dispatch_offer')])
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
         try:
-            await message.edit_text(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.edit_text(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Рассылка объявления\n\n'
+                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
         except:
-            await message.answer(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.answer(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Рассылка объявления\n\n'
+                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
     if button_data == '7day':
         rows.insert(2, [InlineKeyboardButton(text='‹ Назад', callback_data='auto_posting')])
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
         try:
-            await message.edit_text(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.edit_text(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 7 дней\n\n'
+                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
         except:
-            await message.answer(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.answer(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 7 дней\n\n'
+                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
     if button_data == '30day':
         rows.insert(2, [InlineKeyboardButton(text='‹ Назад', callback_data='auto_posting')])
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
         try:
-            await message.edit_text(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.edit_text(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 30 дней\n\n'
+                                      f'<b>Цена:</b> 299 ₽', reply_markup=markup, parse_mode="html")
         except:
-            await message.answer(text='💳 Выберете способ оплаты', reply_markup=markup)
+            await message.answer(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 30 дней\n\n'
+                                      f'<b>Цена:</b> 299 ₽', reply_markup=markup, parse_mode="html")
     # if button_data == 'unblock_pay':
     #     rows.insert(2, [InlineKeyboardButton(text='‹ Назад', callback_data='pay')])
     #     markup = InlineKeyboardMarkup(inline_keyboard=rows)
@@ -265,7 +276,9 @@ async def auto_posting(call: CallbackQuery):
             [InlineKeyboardButton(text='Проверить оплату', callback_data='chek_auto_pay_7')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back_7day')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n<b>Тариф:</b> Автопубликация 7 дней\n\n<b>Цена:</b> 99 ₽',reply_markup=markup, parse_mode="HTML")
+    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 7 дней\n\n'
+                                      f'<b>Цена:</b> 99 ₽',reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == '30day_pay')
 async def auto_posting(call: CallbackQuery):
