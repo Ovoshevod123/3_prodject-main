@@ -19,6 +19,13 @@ id_list_dispatch = []
 id_list_auto = []
 chek_ub = []
 edit_list = []
+group = []
+rows_new_1 = [[InlineKeyboardButton(text='POD-система (Подик)', callback_data='POD_система')],
+              [InlineKeyboardButton(text='Жидкость', callback_data='Жидкость')],
+              [InlineKeyboardButton(text='Картридж/испаритель/бак', callback_data='Картридж_испаритель_бак')],
+              [InlineKeyboardButton(text='Одноразовая электронная сигарета',callback_data='Одноразовая_электронная_сигарета')],
+              [InlineKeyboardButton(text='Другое', callback_data='Другое')],
+              [buttons[4]]]
 
 class new_product(StatesGroup):
     group = State()
@@ -43,7 +50,11 @@ async def text_def(id_of, user):
             price = f"<b>{name[0][5]} ₽</b>\n"
         else:
             price = f"<b>{name[0][5]}</b>\n"
-
+    group = name[0][7].split('|')
+    group.pop(-1)
+    gr = ''
+    for i in group:
+        gr = gr + f"#{i} "
     average = await average_rating(name[0][8])
     text = (f"<b>«{name[0][3]}»</b>\n"
             f"{price}"
@@ -51,7 +62,7 @@ async def text_def(id_of, user):
             f"{name[0][6]} 📍\n\n"
             f"@{name[0][8]}\n"
             f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
-            f"#{name[0][7]}\n"
+            f"{gr}\n"
             f"ID: {name[0][1]}")
     print(user)
     return text
@@ -194,8 +205,8 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
                     [buttons[4]]]
             markup = InlineKeyboardMarkup(inline_keyboard=rows)
             chek_ub.append(True)
-            await call.message.edit_text(text=f'📣 Вы начали заполнение нового объявления\n\nВыберите тип объявления:',
-                                             reply_markup=markup)
+            await call.message.edit_text(text=f'📣 Вы начали заполнение нового объявления\n\n'
+                                              f'Выберите категории объявления:',reply_markup=markup)
     else:
         await call.message.answer('У тебя нету публичного username, из за этого пользователи не смогут перейти в твой профиль и написать тебе\n\nПерейди в настройки Telegram и создай свой публичный username')
 
@@ -204,9 +215,30 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
 @rt.callback_query(F.data == 'Картридж_испаритель_бак')
 @rt.callback_query(F.data == 'Одноразовая_электронная_сигарета')
 @rt.callback_query(F.data == 'Другое')
+async def new_1(call: CallbackQuery):
+    global rows_new_1
+    for i in range(5):
+        if call.data == rows_new_1[i][0].callback_data:
+            if call.data not in group:
+                if group == []:
+                    rows_new_1.insert(5, [InlineKeyboardButton(text='Продолжить', callback_data='next')],)
+                group.append(rows_new_1[i][0].callback_data)
+                rows_new_1[i][0].text = f'*{rows_new_1[i][0].text}*'
+            else:
+                group.remove(call.data)
+                rows_new_1[i][0].text = rows_new_1[i][0].text[1:-1]
+                if group == []:
+                    rows_new_1.pop(5)
+            markup = InlineKeyboardMarkup(inline_keyboard=rows_new_1)
+            await call.message.edit_text(text=f'📣 Вы начали заполнение нового объявления\n\n'
+                                              f'Выберите категории объявления:',reply_markup=markup)
+
+@rt.callback_query(F.data == 'next')
 async def new_2_1(call: CallbackQuery, state: FSMContext):
-    fsm_date = call.data
-    await state.update_data(group=fsm_date)
+    res = ''
+    for i in group:
+        res = res + i + '|'
+    await state.update_data(group=res)
     await call.message.edit_text(text='Пришлите фото')
     await state.set_state(new_product.photo)
 
@@ -287,13 +319,16 @@ async def new_6(message: Message, state: FSMContext, bot: Bot, ):
                 price = f"<b>{data['price']} ₽</b>\n"
             else:
                 price = f"<b>{data['price']}</b>\n"
+        gr = ''
+        for i in group:
+            gr = gr + f"#{i} "
         text = (f"<b>«{data['name']}»</b>\n"
                 f"{price}"
                 f"{data['description']}\n"
                 f"{data['locate']} 📍\n\n"
                 f"@{message.chat.username}\n"
                 f"<a href='t.me/VBaraholka_bot/?start=2_{message.chat.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
-                f"#{data['group']}\n")
+                f"{gr}\n")
         builder = MediaGroupBuilder(caption=text)
         for i in data['photo']:
             builder.add_photo(media=f'{i}', parse_mode="HTML")
