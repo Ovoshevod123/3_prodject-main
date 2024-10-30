@@ -84,7 +84,7 @@ async def start_def(message: Message):
             f'Ваши объявления публикуются здесь.')
     await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
 
-@rt.message(Command('start'))
+@rt.message(Command('start'), F.chat.type == 'private')
 async def start(message: Message, bot: Bot):
     edit_list.clear()
     try:
@@ -120,10 +120,15 @@ async def start(message: Message, bot: Bot):
                 cur.execute(f"SELECT col_ref FROM users WHERE id = '{ref[2:]}'")
                 col_ref = cur.fetchall()
                 cur.execute(f"Update users set 'col_ref' = '{int(col_ref[0][0]) + 1}' where id = '{ref[2:]}'")
-                await bot.send_message(chat_id=int(ref[2:]), text='По вашей ссылке')
+                await bot.send_message(chat_id=int(ref[2:]), text='🎉 Поздравляем!\n'
+                                                                  'У вас новый реферальный пользователь.\n\n'
+                                                                  f'Ваших рефералов теперь: {col_ref[0][0]}')
             await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
     if info == None:
-        cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', '{ref[2:]}')")
+        if ref == None:
+            cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', 'None')")
+        else:
+            cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', '{ref[2:]}')")
     db.commit()
     db.close()
 
@@ -205,7 +210,8 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
                     [buttons[4]]]
             markup = InlineKeyboardMarkup(inline_keyboard=rows)
             chek_ub.append(True)
-            await call.message.edit_text(text=f'📣 Вы начали заполнение нового объявления\n\n'
+            await call.message.edit_text(text=f'Этап 1/6\n\n'
+                                              f'📣 Вы начали заполнение нового объявления\n\n'
                                               f'Выберите категории объявления:',reply_markup=markup)
     else:
         await call.message.answer('У тебя нету публичного username, из за этого пользователи не смогут перейти в твой профиль и написать тебе\n\nПерейди в настройки Telegram и создай свой публичный username')
@@ -223,14 +229,15 @@ async def new_1(call: CallbackQuery):
                 if group == []:
                     rows_new_1.insert(5, [InlineKeyboardButton(text='Продолжить', callback_data='next')],)
                 group.append(rows_new_1[i][0].callback_data)
-                rows_new_1[i][0].text = f'*{rows_new_1[i][0].text}*'
+                rows_new_1[i][0].text = f'· {rows_new_1[i][0].text} ·'
             else:
                 group.remove(call.data)
                 rows_new_1[i][0].text = rows_new_1[i][0].text[1:-1]
                 if group == []:
                     rows_new_1.pop(5)
             markup = InlineKeyboardMarkup(inline_keyboard=rows_new_1)
-            await call.message.edit_text(text=f'📣 Вы начали заполнение нового объявления\n\n'
+            await call.message.edit_text(text=f'Этап 1/6\n\n'
+                                              f'📣 Вы начали заполнение нового объявления\n\n'
                                               f'Выберите категории объявления:',reply_markup=markup)
 
 @rt.callback_query(F.data == 'next')
@@ -239,7 +246,8 @@ async def new_2_1(call: CallbackQuery, state: FSMContext):
     for i in group:
         res = res + i + '|'
     await state.update_data(group=res)
-    await call.message.edit_text(text='Пришлите фото')
+    await call.message.edit_text(text='Этап 2/6\n\n'
+                                      'Пришлите фото')
     await state.set_state(new_product.photo)
 
 @rt.message(new_product.photo)
@@ -252,14 +260,16 @@ async def new_2_2(message: Message, state: FSMContext):
             await state.update_data(photo=photo)
             await state.set_state(new_product.name)
             await message.answer(text='Фото сохранены.', reply_markup=types.ReplyKeyboardRemove())
-            await message.answer(text='Введите название товара:')
+            await message.answer(text='Этап 3/6\n\n'
+                                      'Введите название товара')
         else:
             photo_1 = message.photo
             photo.append(photo_1[-1].file_id)
             col = len(photo)
             if col == 5:
                 await message.answer(text='Фото добавлено – 5 из 5', reply_markup=types.ReplyKeyboardRemove())
-                await message.answer(text='Введите название товара:', reply_markup=types.ReplyKeyboardRemove())
+                await message.answer(text='Этап 3/6\n\n'
+                                          'Введите название товара', reply_markup=types.ReplyKeyboardRemove())
                 while len(photo) > 5:
                     photo.pop()
                 await state.update_data(photo=photo)
@@ -267,7 +277,7 @@ async def new_2_2(message: Message, state: FSMContext):
             elif col > 5:
                 await message.answer(text='Вы отправили больше 5 фото')
             else:
-                msg_photo = await message.answer(text=f'Фото добавлено – {col} из 5. Еще одно?', reply_markup=markup)
+                msg_photo = await message.answer(text=f'Фото добавлено – {col} из 5\nЕще одно?', reply_markup=markup)
     except TypeError:
         await message.answer(text='Пришлите фото!')
 
@@ -281,7 +291,8 @@ async def new_3(message: Message, state: FSMContext):
         await state.set_state(new_product.price)
         kb = [[types.KeyboardButton(text="Пропустить")]]
         markup = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
-        msg_2 = await message.answer(text='Введите цену товара:', reply_markup=markup)
+        msg_2 = await message.answer(text='Этап 4/6\n\n'
+                                          'Введите цену товара', reply_markup=markup)
 
 @rt.message(new_product.price)
 async def new_5(message: Message, state: FSMContext):
@@ -290,7 +301,8 @@ async def new_5(message: Message, state: FSMContext):
     else:
         await state.update_data(price=message.text)
         await state.set_state(new_product.description)
-        await message.answer(text='Введите описание товара:', reply_markup=types.ReplyKeyboardRemove())
+        await message.answer(text='Этап 5/6\n\n'
+                                  'Введите описание товара', reply_markup=types.ReplyKeyboardRemove())
 
 @rt.message(new_product.description)
 async def new_4(message: Message, state: FSMContext):
@@ -299,7 +311,8 @@ async def new_4(message: Message, state: FSMContext):
     else:
         await state.update_data(description=message.text)
         await state.set_state(new_product.locate)
-        await message.answer(text='Укажите место встречи с покупателем:')
+        await message.answer(text='Этап 6/6\n\n'
+                                  'Укажите место встречи с покупателем')
 
 @rt.message(new_product.locate)
 async def new_6(message: Message, state: FSMContext, bot: Bot, ):
@@ -371,7 +384,7 @@ async def send_0(callback: CallbackQuery, bot: Bot):
 
     date = datetime.datetime.now()
     cur.execute(
-        f"""INSERT INTO users_offer VALUES ('{callback.message.chat.id}', '{send_02[0].message_id}', '{a}', '{data_state['name']}', '{data_state['description']}', '{data_state['price']}', '{data_state['locate']}', '{data_state['group']}', '{callback.message.chat.username}', '{date.date()}')""")
+        f"""INSERT INTO users_offer VALUES ('{callback.message.chat.id}', '{send_02[0].message_id}', '{a}', '{data_state['name']}', '{data_state['description']}', '{data_state['price']}', '{data_state['locate']}', '{data_state['group']}', '{callback.message.chat.username}', '{date.date()}', '{date.time().hour}:{date.time().minute}')""")
     cur.execute(f"SELECT username FROM users WHERE id = '{callback.message.chat.id}'")
     chek_username = cur.fetchone()
     if str(chek_username[0]) == 'None':
@@ -574,7 +587,7 @@ async def edit_0(call: CallbackQuery):
             [buttons_edit[5]]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     await call.message.edit_text(text='⬆️ Это ваше объявление\n\n'
-                                      'Сдесь вы можете изменить его.\n'
+                                      'Здесь вы можете изменить его.\n'
                                       'Что хотите изменить?', reply_markup=markup)
 
 class edit_product(StatesGroup):
@@ -716,11 +729,11 @@ async def edit_photo_2(call: CallbackQuery, bot: Bot):
     photo.clear()
 
 @rt.callback_query(F.data == 'edit_yes_text')
-async def edit_photo_2(call: CallbackQuery, bot: Bot):
+async def edit_text(call: CallbackQuery, bot: Bot):
+    await edit_def(edit_list[0][0], edit_list[0][1], call_data)
     text = await text_def(call_data, call.from_user.username)
     await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=call_data, caption=text, parse_mode="HTML")
     a = await call.message.edit_text(text='✏️ Объявление изменено')
-    await edit_def(edit_list[0][0], edit_list[0][1], call_data)
     await start_def(call.message)
     await asyncio.sleep(3)
     await a.delete()
@@ -745,14 +758,27 @@ async def send_media(message, user, what_edit, edit):
     if what_edit == 'locate':
         offer[6] = edit
 
+    if offer[5] == 'None':
+        price = ''
+    else:
+        if offer[5].isdigit() == True:
+            price = f"<b>{offer[5]} ₽</b>\n"
+        else:
+            price = f"<b>{offer[5]}</b>\n"
+    group = offer[7].split('|')
+    group.pop(-1)
+    gr = ''
+    for i in group:
+        gr = gr + f"#{i} "
+
     average = await average_rating(offer[8])
     text = (f"<b>«{offer[3]}»</b>\n"
-            f"<b>{offer[5]} ₽</b>\n"
+            f"{price}"
             f"{offer[4]}\n"
             f"{offer[6]} 📍\n\n"
             f"@{offer[8]}\n"
             f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
-            f"#{offer[7]}\n"
+            f"{gr}\n"
             f"ID: {offer[1]}")
 
     builder = MediaGroupBuilder(caption=text)
@@ -765,7 +791,7 @@ async def edit_name(call: CallbackQuery, state: FSMContext):
     rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='edit')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
 
-    await call.message.edit_text(text=f'Введите новое название товара:',
+    await call.message.edit_text(text=f'Введите новое название товара',
                                  reply_markup=markup)
     await state.set_state(edit_product.name)
 
@@ -774,7 +800,7 @@ async def edit_description(call: CallbackQuery, state: FSMContext):
     rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='edit')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
 
-    await call.message.edit_text(text=f'Введите новое описание товара:',
+    await call.message.edit_text(text=f'Введите новое описание товара',
                                  reply_markup=markup)
     await state.set_state(edit_product.description)
 
@@ -783,7 +809,7 @@ async def edit_price(call: CallbackQuery, state: FSMContext):
     rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='edit')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
 
-    await call.message.edit_text(text=f'Введите новую цену товара:',
+    await call.message.edit_text(text=f'Введите новую цену товара',
                                  reply_markup=markup)
     await state.set_state(edit_product.price)
 
@@ -792,7 +818,7 @@ async def edit_locate(call: CallbackQuery, state: FSMContext):
     rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='edit')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
 
-    await call.message.edit_text(text=f'Введите новое место встречи с покупателем:',
+    await call.message.edit_text(text=f'Введите новое место встречи с покупателем',
                                  reply_markup=markup)
     await state.set_state(edit_product.locate)
 

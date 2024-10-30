@@ -10,6 +10,9 @@ import asyncio
 import pytz
 import datetime
 from datetime import timedelta
+
+from pyexpat.errors import messages
+
 from reply import buttons
 from hand import offer_def, id_list_dispatch, id_list_auto, forward, average_rating, del_media, edit_def, start_def, text_def
 from inf import CRYPTO, CHANNEL_ID
@@ -91,13 +94,29 @@ async def payment_question(message, button_data):
 @rt_5.callback_query(lambda query: query.data in id_list_dispatch)
 async def pay_offer_menu(call: CallbackQuery, bot: Bot):
     global call_data, call_inf, id_msg_2, id_list_dispatch
-    await call.message.delete()
-    id_list_dispatch.clear()
     call_data = call.data
     call_data = call_data.replace('_dispatch', '')
     call_inf = call
-    id_msg_2 = await forward(call.message, call_data)
-    await payment_question(call.message, 'dispatch')
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f"SELECT date, time FROM users_offer WHERE offer_id_channel = {call_data}")
+    offer_date = cur.fetchall()
+    db.commit()
+    db.close()
+    date = offer_date[0][0].split('-')
+    time = offer_date[0][1].split(':')
+    a = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]), 0, 0)
+    b = datetime.datetime.now() - a
+    if int(b.days) >= 1:
+        id_list_dispatch.clear()
+        await call.message.delete()
+        id_msg_2 = await forward(call.message, call_data)
+        await payment_question(call.message, 'dispatch')
+    else:
+        msg = await call.message.answer(text="❌ Вы не можете воспользоваться этим тарифом\n\n"
+                                             "Этот тариф становится доступным через 24 часа после публикации объявления.")
+        await asyncio.sleep(10)
+        await msg.delete()
 
 # [InlineKeyboardButton(text='Ограничение кол-во объявлений', callback_data='unblock')],
 # [InlineKeyboardButton(text='Купить размещение объявление', callback_data='unblock_col')],
