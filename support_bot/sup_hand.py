@@ -13,13 +13,15 @@ rt = Router()
 class question(StatesGroup):
     question = State()
 
-@rt.message(Command('start'))
+@rt.message(Command('start'), F.chat.type == 'private')
 async def start_def(message: Message):
-    await message.answer(text=f'Это бот тех. поддержки\n\n'
-                              f'Просто напиши свой вопрос и он автоматически отправится администратору')
+    await message.answer(text=f'🤖 Это бот тех. поддержки\n\n'
+                              f'Просто напиши свой вопрос и он автоматически отправится администратору😊')
 
-@rt.message(Command('answer'))
+
+@rt.message(Command('answer'), F.chat.type == 'group')
 async def answer_def(message: Message, bot: Bot):
+    print(message.chat.type)
     if message.text == '/answer':
         pass
     else:
@@ -27,15 +29,17 @@ async def answer_def(message: Message, bot: Bot):
         chat_id = data[1]
         text = data[2]
         await bot.send_message(chat_id=int(chat_id), text="✉️ Ответ от тех. поддержки:\n\n"
-                                                          f"{text}")
+                                                          f"<blockquote>{text}</blockquote>", parse_mode='html')
         await message.answer(text='✉️ Ответ отправлен')
 
 @rt.message()
 async def question_def(message: Message, bot: Bot):
+    print(message.chat.type)
     text = message.text
-    text = (f'Вопрс от пользователя @{message.chat.username}\n\n'
+    text = (f'Вопрс от пользователя:\n'
+            f' @{message.chat.username}\n\n'
             f'Вопрос:\n'
-            f'{text}\n\n'
+            f'<blockquote>{text}</blockquote>\n\n'
             f'<code>/answer {message.chat.id} Ваш ответ</code>')
     if message.photo != None:
         photo = message.photo

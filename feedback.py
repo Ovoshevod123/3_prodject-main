@@ -1,20 +1,47 @@
-from aiogram import types, Router, F, Bot
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
-from aiogram.filters import Command
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
 from aiogram.utils.media_group import MediaGroupBuilder
 import sqlite3
 import asyncio
 from datetime import date
-
-from aiohttp.helpers import method_must_be_empty_body
-
-from reply import buttons, but_del, edit_but, buttons_edit
-from inf import CHANNEL_ID
+from reply import buttons
 
 rt_3 = Router()
 fb_score_main = 0
+
+async def text_def(id_of, user):
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f"SELECT * FROM users_offer WHERE offer_id_channel = '{id_of}'")
+    name = cur.fetchall()
+    db.commit()
+    db.close()
+
+    if name[0][5] == 'None':
+        price = ''
+    else:
+        if name[0][5].isdigit() == True:
+            price = f"<b>{name[0][5]} ₽</b>\n"
+        else:
+            price = f"<b>{name[0][5]}</b>\n"
+    group = name[0][7].split('|')
+    group.pop(-1)
+    gr = ''
+    for i in group:
+        gr = gr + f"#{i} "
+    average = await average_rating(name[0][8])
+    text = (f"<b>«{name[0][3]}»</b>\n"
+            f"{price}"
+            f"{name[0][4]}\n"
+            f"{name[0][6]} 📍\n\n"
+            f"@{name[0][8]}\n"
+            f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+            f"{gr}\n"
+            f"ID: {name[0][1]}")
+    print(user)
+    return text
 
 async def average_rating(user):
     common = 0
@@ -37,35 +64,17 @@ async def forward_fb(message, id):
     try:
         db = sqlite3.connect('users.db')
         cur = db.cursor()
-        cur.execute(f"SELECT * FROM users_offer WHERE offer_id_channel = '{id}'")
-        name = cur.fetchall()
+        cur.execute(f"SELECT photo FROM users_offer WHERE offer_id_channel = '{id}'")
+        name = cur.fetchone()
         db.commit()
         db.close()
-        a = name[0][2]
+        a = name[0]
         a = a.split('|')
         a.pop(0)
-        average = await average_rating(name[0][8])
-        if average[1] == 1:
-            fb = 'отзыв'
-        elif average[1] == 2:
-            fb = 'отзыва'
-        elif average[1] == 3:
-            fb = 'отзыва'
-        elif average[1] == 4:
-            fb = 'отзыва'
-        else:
-            fb = 'отзывов'
-        text = (f"#{name[0][7]}\n\n"
-                f"{name[0][5]} ₽\n"
-                f"{name[0][3]}\n"
-                f"{name[0][4]}\n"
-                f"{name[0][6]}\n\n"
-                f"@{name[0][8]}\n"
-                f"{average[0]} {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n"
-                f"({average[1]} {fb})")
+        text = await text_def(id, message.chat.username)
         builder = MediaGroupBuilder(caption=text)
         for i in a:
-            builder.add_photo(media=f'{i}')
+            builder.add_photo(media=f'{i}', parse_mode="HTML")
         await message.answer_media_group(media=builder.build())
         return name
     except:
@@ -164,29 +173,10 @@ async def fbs_def(message, data_fbs, score, out):
         for i in data_fbs:
             frst += int(i[3])
         srznch = round(frst/int(len(data_fbs)), 2)
-        # text = (f"👤 Пользователь: @{data_fbs[score][1]} {srznch} ({fb_score})\n\n"
-        #         f"📄 Отзыв {score+1} из {fb_score}\n\n"
-        #         f"🏆 Оценка:\n{'⭐' * data_fbs[score][3]}{' ☆' * (5 - data_fbs[score][3])}\n\n"
-        #         f"Коментарий:\n{data_fbs[score][2]}\n\n"
-        #         f"📅 📆 🗓️ Дата публикации отзыва: {data_fbs[score][5]}")
-        month = {
-            '1': 'Января',
-            '2': 'Февраля',
-            '3': 'Марта',
-            '4': 'Апреля',
-            '5': 'Мая',
-            '6': 'Июня',
-            '7': 'Июля',
-            '8': 'Августа',
-            '9': 'Сентября',
-            '10': 'Октября',
-            '11': 'Ноября',
-            '12': 'Декабря',
-        }
         date = str(data_fbs[score][5]).split('-')
-        # date = f'{date[2]} {month[f"{date[1]}"]} {date[0]}'
         date = f"{date[2]}.{date[1]}.{date[0]}"
-        text = (f"<b>@{data_fbs[score][1]}</b> {srznch} ({fb_score})\n\n"
+        text = (f"<b>@{data_fbs[score][1]}</b> {srznch} ({fb_score})\n"
+                f"<a href='https://t.me/TLT_Vape_Baraholka/{data_fbs[score][0]}'>Объявление</a>\n\n"
                 f"{'⭐' * data_fbs[score][3]}{' ☆' * (5 - data_fbs[score][3])}\n"
                 f"<b>Коментарий:</b>\n{data_fbs[score][2]}\n\n"
                 f"<b>{date}</b>\n\n")
@@ -222,9 +212,9 @@ async def fbs_def(message, data_fbs, score, out):
                 markup = InlineKeyboardMarkup(inline_keyboard=rows)
 
         try:
-            await message.edit_text(text=text, reply_markup=markup, parse_mode='HTML')
+            await message.edit_text(text=text, reply_markup=markup, parse_mode='HTML' ,disable_web_page_preview=True)
         except:
-            await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
+            await message.answer(text=text, reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)
 
 async def feedback_chek_group(message: Message, name):
     global fb_score, fbs
@@ -296,54 +286,43 @@ async def feedback_2(message: Message, state: FSMContext):
             await feedback_1_2(message, state)
         else:
             deff = await forward_fb(message, data['id'])
-            await message.answer(text='Убедитесь что верно выбранно объявление!\n\n'
+            await message.answer(text='❗Убедитесь что верно выбранно объявление❗\n\n'
                                          'Напишите коментарий')
             await state.set_state(feedback_class_2.text_fb)
 
 @rt_3.message(feedback_class_2.text_fb)
 async def feedback_3(message: Message, state: FSMContext):
-    if message.content_type != types.ContentType.TEXT:
-        await message.answer(text='Пришлите текст!')
-        await state.set_state(feedback_class_1.id)
-    else:
-        await state.update_data(text_fb=message.text)
-        await message.answer(text='Поставте оценку от 1 до 5')
-        await state.set_state(feedback_class_2.score)
+    await state.update_data(text_fb=message.text)
+    rows = [[InlineKeyboardButton(text='1', callback_data='fb_1'), InlineKeyboardButton(text='2', callback_data='fb_2')],
+            [InlineKeyboardButton(text='3', callback_data='fb_3'), InlineKeyboardButton(text='4', callback_data='fb_4')],
+            [InlineKeyboardButton(text='5', callback_data='fb_5')]]
+    markup = InlineKeyboardMarkup(inline_keyboard=rows)
+    await message.answer(text='Поставте оценку от 1 до 5', reply_markup=markup)
 
-@rt_3.message(feedback_class_2.score)
-async def feedback_4(message: Message, state: FSMContext):
+@rt_3.callback_query(F.data == 'fb_1')
+@rt_3.callback_query(F.data == 'fb_2')
+@rt_3.callback_query(F.data == 'fb_3')
+@rt_3.callback_query(F.data == 'fb_4')
+@rt_3.callback_query(F.data == 'fb_5')
+async def feedback_4(call: CallbackQuery, state: FSMContext):
     global data, msg
-    cycle = []
-    send = message.text
-    send_2 = ['1', '2', '3', '4', '5']
-    for i in send_2:
-        if send == str(i):
-            cycle.append(True)
-    try:
-        if cycle[0] == True:
-            rows = [[InlineKeyboardButton(text='Опубликовать', callback_data='publish_yes')],
-                    [InlineKeyboardButton(text='Заполнить отзыв занова', callback_data='fb_yes')],
-                    [InlineKeyboardButton(text='Главное меню', callback_data='back')]]
-            markup = InlineKeyboardMarkup(inline_keyboard=rows)
-            msg = message
-            await state.update_data(score=message.text)
-            data = await state.get_data()
-            await message.answer(text=f"Ваш отзыв:\n"
-                                      f"Оценка:   {'⭐' * int(data['score'])}{' ☆' * (5 - int(data['score']))}\n\n"
-                                      f"Кометарий:   {data['text_fb']}\n", reply_markup=markup)
-            await state.clear()
-        else:
-            await message.answer(text='Ошибка, отправте оценку числом от 1 до 5')
-            await state.set_state(feedback_class_2.score)
-    except:
-        await message.answer(text='Ошибка, отправте оценку числом от 1 до 5')
-        await state.set_state(feedback_class_2.score)
+    score = call.data.replace('fb_', '')
+    rows = [[InlineKeyboardButton(text='Опубликовать', callback_data='publish_yes')],
+            [InlineKeyboardButton(text='Заполнить отзыв занова', callback_data='fb_yes')]]
+    markup = InlineKeyboardMarkup(inline_keyboard=rows)
+    msg = call.message
+    await state.update_data(score=score)
+    data = await state.get_data()
+    print(data)
+    await call.message.edit_text(text=f"⬇️ Ваш отзыв\n\n"
+                              f"{'⭐' * int(score)}{' ☆' * (5 - int(score))}\n\n"
+                              f"<b>Кометарий:</b>\n"
+                              f"{data['text_fb']}\n", reply_markup=markup, parse_mode="html")
+    await state.clear()
 
 @rt_3.callback_query(F.data == 'publish_yes')
 async def fb_data_4_1(call: CallbackQuery, bot: Bot, state: FSMContext):
-    rows = [[InlineKeyboardButton(text='Главное меню', callback_data='back')]]
-    markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    msg_2 = await call.message.edit_text('Отзыв опубликован')
+    msg_2 = await call.message.edit_text('📢 Отзыв опубликован')
     await start_def(call.message)
     await asyncio.sleep(3)
     await msg_2.delete()

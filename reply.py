@@ -1,7 +1,5 @@
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardRemove, \
-    KeyboardButtonPollType, InlineKeyboardButton, InlineKeyboardMarkup, \
-    CallbackQuery
-from aiogram import F, Router
+from aiogram.types import InlineKeyboardButton
+from aiogram import Router
 import sqlite3
 
 rt_2 = Router()

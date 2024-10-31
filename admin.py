@@ -1,16 +1,15 @@
 import asyncio
-from os.path import isabs
 
-from aiogram import Bot, Dispatcher, types, Router, F
+from aiogram import Bot, types, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
 from aiogram.filters import Command
 import datetime
 from datetime import date
 import pytz
 import sqlite3
-from hand import average_rating, del_media, use_token_ub
+from hand import average_rating, del_media
 from inf import ADMIN_LIST, CHANNEL_ID
 
 rt_4 = Router()

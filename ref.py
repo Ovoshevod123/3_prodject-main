@@ -1,9 +1,6 @@
-from aiogram import types, Router, F, Bot
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
-from aiogram.filters import Command
+from aiogram import Router, F
+from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
 import sqlite3
-import time
-import asyncio
 
 rt_6 = Router()
 

@@ -1,17 +1,13 @@
 from aiocryptopay import AioCryptoPay, Networks
-from aiogram import types, Router, F, Bot
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
-from aiogram.filters import Command
+from aiogram import Router, F, Bot
+from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
 from aiogram.utils.media_group import MediaGroupBuilder
+
 import sqlite3
 import asyncio
 import pytz
 import datetime
 from datetime import timedelta
-
-from pyexpat.errors import messages
 
 from reply import buttons
 from hand import offer_def, id_list_dispatch, id_list_auto, forward, average_rating, del_media, edit_def, start_def, text_def
@@ -167,6 +163,9 @@ async def dispatch(call: CallbackQuery, bot: Bot):
         await asyncio.sleep(5)
         await msg.delete()
     else:
+        msg = await call.message.edit_text(text='💸 Оплата прошла успешно')
+        await asyncio.sleep(3)
+        await msg.delete()
         cur.execute(f"UPDATE users SET balance = {float(data[0]) - 0.01} WHERE id = '{call.from_user.id}'")
         await dispatch_def(call, bot)
     db.commit()
@@ -195,7 +194,6 @@ async def dispatch(call: CallbackQuery, bot: Bot):
         await msg.delete()
 
 async def dispatch_def(call, bot):
-    await call.message.edit_text(text='💸 Оплата прошла успешно')
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute("SELECT id FROM users")
