@@ -19,10 +19,18 @@ tz = pytz.timezone("Europe/Samara")
 class ban_user(StatesGroup):
     username = State()
 
+class anban_user(StatesGroup):
+    username = State()
+
+class del_of(StatesGroup):
+    id = State()
+
 @rt_4.message(Command('admin'))
 async def chek_admin(message: Message):
     rows = [[InlineKeyboardButton(text='Запуск авто-постинга', callback_data='ap')],
-            [InlineKeyboardButton(text='Бан пользователя', callback_data='ban')]]
+            [InlineKeyboardButton(text='Бан пользователя', callback_data='ban')],
+            [InlineKeyboardButton(text='Разбан пользователя', callback_data='anban')],
+            [InlineKeyboardButton(text='Удалить объявление', callback_data='del_of')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     if message.chat.id == ADMIN_LIST:
         await message.answer(text='Добро пожаловать', reply_markup=markup)
@@ -117,3 +125,36 @@ async def ban_1(message: Message, state: FSMContext):
     db.commit()
     db.close()
     await message.answer('Пользователь забанен')
+
+@rt_4.callback_query(F.data == 'anban')
+async def ban_2(call: CallbackQuery, state: FSMContext):
+    await call.message.edit_text(text='Введите username пользователя')
+    await state.set_state(anban_user.username)
+
+@rt_4.message(anban_user.username)
+async def anban(message: Message, state: FSMContext):
+    await state.update_data(username=message.text)
+    data = await state.get_data()
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f"DELETE from ban_users WHERE username = '{data['username']}'")
+    db.commit()
+    db.close()
+    await message.answer('Пользователь разбанен')
+
+@rt_4.callback_query(F.data == 'del_of')
+async def del_of_1(call: CallbackQuery, state: FSMContext):
+    await call.message.edit_text(text='Введите id объявления')
+    await state.set_state(del_of.id)
+
+@rt_4.message(del_of.id)
+async def del_of_2(message: Message, state: FSMContext):
+    await state.update_data(id=message.text)
+    data = await state.get_data()
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f"DELETE from users_offer WHERE offer_id_channel = '{data['id']}'")
+    cur.execute(f"DELETE from auto_posting WHERE offer_id_channel = '{data['id']}'")
+    db.commit()
+    db.close()
+    await message.answer(text='Объявление удалено из баз')
