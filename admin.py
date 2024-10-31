@@ -38,7 +38,8 @@ async def chek_admin(message: Message):
 @rt_4.callback_query(F.data == 'ap')
 async def auto_posting(call: CallbackQuery, bot: Bot):
     while True:
-        if int(datetime.datetime.now(tz).time().hour) == 9 and int(datetime.datetime.now(tz).time().minute) == 0:
+        print(datetime.datetime.now(tz).time().hour, datetime.datetime.now(tz).time().minute)
+        if int(datetime.datetime.now(tz).time().hour) == 2:
         # if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
             db = sqlite3.connect('users.db')
             cur = db.cursor()
@@ -69,7 +70,7 @@ async def auto_posting(call: CallbackQuery, bot: Bot):
                 else:
                     await send_media(bot, i[0])
             await asyncio.sleep(82800)
-        await asyncio.sleep(30)
+        await asyncio.sleep(600)
 
 async def send_media(bot, offer_id):
     db = sqlite3.connect('users.db')
@@ -95,7 +96,7 @@ async def send_media(bot, offer_id):
     send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media)
     await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'\nid сообщения: {send_02[0].message_id}')
 
-    await del_media(bot, offer_id)
+    # await del_media(bot, offer_id)
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT * FROM auto_posting WHERE offer_id_channel = '{offer_id}'")
@@ -103,7 +104,7 @@ async def send_media(bot, offer_id):
     name_2 = name_2[0]
     cur.execute(f"DELETE from users_offer WHERE offer_id_channel = {offer_id}")
     cur.execute(f"DELETE from auto_posting WHERE offer_id_channel = {offer_id}")
-    cur.execute(f"INSERT INTO users_offer VALUES ('{name[0]}', '{send_02[0].message_id}', '{name[2]}', '{name[3]}', '{name[4]}', '{name[5]}', '{name[6]}', '{name[7]}', '{name[8]}')")
+    cur.execute(f"INSERT INTO users_offer VALUES ('{name[0]}', '{send_02[0].message_id}', '{name[2]}', '{name[3]}', '{name[4]}', '{name[5]}', '{name[6]}', '{name[7]}', '{name[8]}', '{name[9]}', '{name[10]}')")
     cur.execute(f"INSERT INTO auto_posting VALUES ('{name_2[0]}', '{send_02[0].message_id}', '{name_2[2]}', '{name_2[3]}', '{name_2[4]}')")
     db.commit()
     db.close()
