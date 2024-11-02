@@ -475,21 +475,43 @@ async def forward(message, offer_data):
     id_msg = await message.answer_media_group(media=builder.build())
     return id_msg
 
-async def del_media(bot, id_offer):
+async def del_media(call, bot, id_offer):
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT photo FROM users_offer WHERE offer_id_channel = '{id_offer}'")
     photo_ = cur.fetchone()
+    cur.execute(f"SELECT * FROM users_offer WHERE offer_id_channel = '{id_offer}'")
+    name = cur.fetchall()
     db.commit()
     db.close()
     photo_ = photo_[0]
     photo_ = photo_.split('|')
     photo_.pop(0)
     col = len(photo_)
-    for i in range(col):
-        ii = int(id_offer) + col - 1
-        ii = ii - i
-        await bot.delete_message(chat_id=CHANNEL_ID, message_id=ii)
+    if name[0][5] == 'None':
+        price = ''
+    else:
+        if name[0][5].isdigit() == True:
+            price = f"<b>{name[0][5]} ₽</b>\n"
+        else:
+            price = f"<b>{name[0][5]}</b>\n"
+    try:
+        for i in range(col):
+            ii = int(call_data) + col - 1
+            ii = ii - i
+            await bot.delete_message(chat_id=CHANNEL_ID, message_id=ii)
+    except:
+        average = await average_rating(name[0][8])
+        text = (f"<b>❗ ЭТО ОБЪЯВЛЕНИЕ УДАЛЕННО ❗</b>\n\n"
+                f"«🗑DEL<b>{name[0][3]}</b>DEL🗑»\n"
+                f"{price}"
+                f"{name[0][4]}\n"
+                f"{name[0][6]} 📍\n\n"
+                f"@{name[0][8]}\n"
+                f"<a href='t.me/VBaraholka_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+                f"#{name[0][7]}\n"
+                f"ID: {name[0][1]}")
+        await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=id_offer, caption=text, parse_mode="HTML")
 
 @rt.callback_query(lambda query: query.data in id_list)
 async def delete_1(call: CallbackQuery, bot: Bot):

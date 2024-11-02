@@ -9,7 +9,7 @@ import datetime
 from datetime import date
 import pytz
 import sqlite3
-from hand import average_rating, del_media
+from hand import del_media,text_def
 from inf import ADMIN_LIST, CHANNEL_ID
 
 rt_4 = Router()
@@ -38,12 +38,11 @@ async def chek_admin(message: Message):
 @rt_4.callback_query(F.data == 'ap')
 async def auto_posting(call: CallbackQuery, bot: Bot):
     while True:
-        print(datetime.datetime.now(tz).time().hour, datetime.datetime.now(tz).time().minute)
-        if int(datetime.datetime.now(tz).time().hour) == 2:
-        # if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
+        # if int(datetime.datetime.now(tz).time().hour) == 2:
+        if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
             db = sqlite3.connect('users.db')
             cur = db.cursor()
-            cur.execute(f"SELECT offer_id_channel, final FROM auto_posting")
+            cur.execute(f"SELECT offer_id_channel, final, seller FROM auto_posting")
             ids = cur.fetchall()
             cur.execute(f"SELECT id, date FROM unblock")
             ids_2 = cur.fetchall()
@@ -68,11 +67,11 @@ async def auto_posting(call: CallbackQuery, bot: Bot):
                     db.commit()
                     db.close()
                 else:
-                    await send_media(bot, i[0])
+                    await send_media(call, bot, i[0], i[2])
             await asyncio.sleep(82800)
         await asyncio.sleep(600)
 
-async def send_media(bot, offer_id):
+async def send_media(call, bot, offer_id, seller):
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT * FROM users_offer WHERE offer_id_channel = '{offer_id}'")
@@ -83,20 +82,20 @@ async def send_media(bot, offer_id):
     a = name[2]
     a = a.split('|')
     a.pop(0)
-    average = await average_rating(name[8])
-    text = f"Цена: {name[5]}\n{name[3]}\n{name[4]}\n{name[6]}\n\nПродавец: @{name[8]}\nРейтинг продавца: {average[0]}\nКол-во отзывов: {average[1]}"
+    text = await text_def(offer_id, seller)
+    text = text.split('ID: ', 1)[0]
     col = len(a)
     if col > 1:
         media = [
-            types.InputMediaPhoto(media=a[0], caption=text),
+            types.InputMediaPhoto(media=a[0], caption=text, parse_mode='html'),
             *[types.InputMediaPhoto(media=photo_id) for photo_id in a[1:]]
         ]
     else:
-        media = [types.InputMediaPhoto(media=a[0], caption=text)]
+        media = [types.InputMediaPhoto(media=a[0], caption=text, parse_mode='html')]
     send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media)
-    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'\nid сообщения: {send_02[0].message_id}')
+    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}', parse_mode='html')
 
-    # await del_media(bot, offer_id)
+    await del_media(call, bot, offer_id)
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT * FROM auto_posting WHERE offer_id_channel = '{offer_id}'")
