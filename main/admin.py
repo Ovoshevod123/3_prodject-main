@@ -10,7 +10,7 @@ from datetime import date
 import pytz
 import sqlite3
 from hand import del_media,text_def
-from inf import ADMIN_LIST, CHANNEL_ID
+from inf import ADMIN_LIST, CHANNEL_ID, REPLY_TO
 
 rt_4 = Router()
 
@@ -38,7 +38,7 @@ async def chek_admin(message: Message):
 @rt_4.callback_query(F.data == 'ap')
 async def auto_posting(call: CallbackQuery, bot: Bot):
     while True:
-        # if int(datetime.datetime.now(tz).time().hour) == 2:
+        # if int(datetime.datetime.now(tz).time().hour) == 7:
         if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
             db = sqlite3.connect('users.db')
             cur = db.cursor()
@@ -60,7 +60,7 @@ async def auto_posting(call: CallbackQuery, bot: Bot):
             for i in ids:
                 still_time = i[1].split('-')
                 still_time = datetime.datetime(int(still_time[0]), int(still_time[1]), int(still_time[2]), tzinfo=tz) - datetime.datetime.now(tz)
-                if still_time.days + 1 < 0:
+                if still_time.days < 0:
                     db = sqlite3.connect('users.db')
                     cur = db.cursor()
                     cur.execute(f"DELETE from auto_posting WHERE offer_id_channel = {i[0]}")
@@ -92,8 +92,9 @@ async def send_media(call, bot, offer_id, seller):
         ]
     else:
         media = [types.InputMediaPhoto(media=a[0], caption=text, parse_mode='html')]
-    send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media)
+    send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media, reply_to_message_id=REPLY_TO)
     await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}', parse_mode='html')
+    await asyncio.sleep(5)
 
     await del_media(call, bot, offer_id)
     db = sqlite3.connect('users.db')

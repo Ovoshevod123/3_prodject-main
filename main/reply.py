@@ -12,6 +12,7 @@ good = InlineKeyboardButton(text='Опубликовать', callback_data='good
 pay = InlineKeyboardButton(text='💵 Платные тарифы', callback_data='pay')
 fb = InlineKeyboardButton(text='📄 Меню отзывов', callback_data='fb_menu')
 account = InlineKeyboardButton(text='👤 Личный кабинет', callback_data='account')
+help = InlineKeyboardButton(text='🆘 Тех. поддержка', url='t.me/VBaraholka_support_bot')
 
 delete_final = InlineKeyboardButton(text='Удалить', callback_data='dell')
 edit = InlineKeyboardButton(text='Редактировать', callback_data='edit')
@@ -24,7 +25,7 @@ edit_description = InlineKeyboardButton(text='Описание', callback_data='
 edit_locate = InlineKeyboardButton(text='📍Место встречи', callback_data='locate')
 edit_back = InlineKeyboardButton(text='‹ Назад', callback_data='del_no')
 
-buttons = [new, account, new_2, good, back, pay, fb, my_off]
+buttons = [new, account, new_2, good, back, pay, fb, my_off, help]
 
 edit_but = [delete_final, edit, back_edit]
 

@@ -43,11 +43,11 @@ async def payment_question(message, button_data):
         try:
             await message.edit_text(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
                                       f'<b>Тариф:</b> Рассылка объявления\n\n'
-                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
+                                      f'<b>Цена:</b> 199 ₽', reply_markup=markup, parse_mode="html")
         except:
             await message.answer(text=f'❗<b>Выберите способ оплаты</b>❗\n\n'
                                       f'<b>Тариф:</b> Рассылка объявления\n\n'
-                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="html")
+                                      f'<b>Цена:</b> 199 ₽', reply_markup=markup, parse_mode="html")
     if button_data == '7day':
         rows.insert(2, [InlineKeyboardButton(text='‹ Назад', callback_data='auto_posting')])
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
@@ -119,7 +119,7 @@ async def pay_offer_menu(call: CallbackQuery, bot: Bot):
 
 @rt_5.callback_query(F.data == 'pay')
 async def pay(call: CallbackQuery):
-    rows = [[InlineKeyboardButton(text=f'Рассылка объявления 99 ₽', callback_data='dispatch_offer')],
+    rows = [[InlineKeyboardButton(text=f'Рассылка объявления 199 ₽', callback_data='dispatch_offer')],
             [InlineKeyboardButton(text=f'Автопубликация', callback_data='auto_posting')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
@@ -127,7 +127,7 @@ async def pay(call: CallbackQuery):
                                       '<b>Рассылка объявлений</b>:\n'
                                       'Бот отправляет выбранное объявление в личные сообщения всем пользователям с пометкой "Реклама"\n\n'
                                       '<b>Автопубликация</b>:\n'
-                                      'Бот публикует выбранное объявление каждый день в 12:00 МСК+1 на протяжении времяни выбранного тарифа\n'
+                                      'Бот публикует выбранное объявление каждый день в 12:00 МСК+1 на протяжении времени выбранного тарифа\n'
                                       , reply_markup=markup, parse_mode='html')
 
 @rt_5.callback_query(F.data == 'dispatch_offer')
@@ -150,7 +150,7 @@ async def auto_posting(call: CallbackQuery):
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
                                       f'<b>Тариф:</b> Рассылка объявления\n\n'
-                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="HTML")
+                                      f'<b>Цена:</b> 199 ₽', reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == 'dispatch_pay_loc')
 async def dispatch(call: CallbackQuery, bot: Bot):
@@ -158,30 +158,30 @@ async def dispatch(call: CallbackQuery, bot: Bot):
     cur = db.cursor()
     cur.execute(f"SELECT balance FROM users WHERE id = '{call.from_user.id}'")
     data = cur.fetchone()
-    if float(data[0]) - 0.01 < 0:
+    if float(data[0]) - 199 < 0:
         msg = await call.message.answer(text='❌ Недостаточно средств')
         await asyncio.sleep(5)
         await msg.delete()
     else:
+        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 199} WHERE id = '{call.from_user.id}'")
+        await dispatch_def(call, bot)
         msg = await call.message.edit_text(text='💸 Оплата прошла успешно')
         await asyncio.sleep(3)
         await msg.delete()
-        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 0.01} WHERE id = '{call.from_user.id}'")
-        await dispatch_def(call, bot)
     db.commit()
     db.close()
 
 @rt_5.callback_query(F.data == 'dispatch_pay')
 async def dispatch(call: CallbackQuery):
     global pay_def
-    pay_def = await creat(await curs(100))
+    pay_def = await creat(await curs(199))
     rows = [[InlineKeyboardButton(text='Оплатить', url=pay_def.bot_invoice_url)],
             [InlineKeyboardButton(text='Проверить оплату', callback_data='chek_dispatch_pay')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='dispatch_back')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
                                       f'<b>Тариф:</b> Рассылка объявления\n\n'
-                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="HTML")
+                                      f'<b>Цена:</b> 199 ₽', reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == 'chek_dispatch_pay')
 async def dispatch(call: CallbackQuery, bot: Bot):
@@ -216,7 +216,7 @@ async def dispatch_def(call, bot):
 @rt_5.callback_query(F.data == 'auto_posting')
 async def auto_posting_1(call: CallbackQuery):
     rows = [[InlineKeyboardButton(text='7 дней 99₽', callback_data='7day')],
-            [InlineKeyboardButton(text='30 дней 349₽', callback_data='30day')],
+            [InlineKeyboardButton(text='30 дней 299₽', callback_data='30day')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='pay')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     await call.message.edit_text(text='🕓 Выберите период автопубликации вашего объявления', reply_markup=markup)
@@ -288,7 +288,7 @@ async def auto_posting(call: CallbackQuery):
 @rt_5.callback_query(F.data == '7day_pay')
 async def auto_posting(call: CallbackQuery):
     global pay_def
-    pay_def = await creat(0.05)
+    pay_def = await creat(await curs(99))
     rows = [[InlineKeyboardButton(text='Оплатить', url=pay_def.bot_invoice_url)],
             [InlineKeyboardButton(text='Проверить оплату', callback_data='chek_auto_pay_7')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back_7day')]]
@@ -300,26 +300,32 @@ async def auto_posting(call: CallbackQuery):
 @rt_5.callback_query(F.data == '30day_pay')
 async def auto_posting(call: CallbackQuery):
     global pay_def
-    pay_def = await creat(0.05)
+    pay_def = await creat(await curs(299))
     rows = [[InlineKeyboardButton(text='Оплатить', url=pay_def.bot_invoice_url)],
             [InlineKeyboardButton(text='Проверить оплату', callback_data='chek_auto_pay_30')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back_30day')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n<b>Тариф:</b> Автопубликация 30 дней\n\n<b>Цена:</b> 349 ₽', reply_markup=markup, parse_mode="HTML")
+    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 30 дней\n\n'
+                                      f'<b>Цена:</b> 299 ₽', reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == '7day_loc')
 async def auto_posting(call: CallbackQuery):
     rows = [[InlineKeyboardButton(text='Оплатить', callback_data='7day_pay_loc')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back_7day')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n<b>Тариф:</b> Автопубликация 7 дней\n\n<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="HTML")
+    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 7 дней\n\n'
+                                      f'<b>Цена:</b> 99 ₽', reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == '30day_loc')
 async def auto_posting(call: CallbackQuery):
     rows = [[InlineKeyboardButton(text='Оплатить', callback_data='30day_pay_loc')],
             [InlineKeyboardButton(text='‹ Назад', callback_data='back_30day')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n<b>Тариф:</b> Автопубликация 30 дней\n\n<b>Цена:</b> 349 ₽', reply_markup=markup, parse_mode="HTML")
+    await call.message.edit_text(text=f'❗<b>Подтвердите покупку</b>❗\n\n'
+                                      f'<b>Тариф:</b> Автопубликация 30 дней\n\n'
+                                      f'<b>Цена:</b> 299 ₽', reply_markup=markup, parse_mode="HTML")
 
 @rt_5.callback_query(F.data == '30day_pay_loc')
 async def auto_posting(call: CallbackQuery):
@@ -327,12 +333,12 @@ async def auto_posting(call: CallbackQuery):
     cur = db.cursor()
     cur.execute(f"SELECT balance FROM users WHERE id = '{call.from_user.id}'")
     data = cur.fetchone()
-    if float(data[0]) - 0.01 < 0:
+    if float(data[0]) - 299 < 0:
         msg = await call.message.answer(text='❌ Недостаточно средств')
         await asyncio.sleep(5)
         await msg.delete()
     else:
-        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 0.01} WHERE id = '{call.from_user.id}'")
+        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 299} WHERE id = '{call.from_user.id}'")
         date = datetime.datetime.strptime(f'{datetime.date.today()}', '%Y-%m-%d')
         new_date = date + timedelta(days=30)
         cur.execute(
@@ -350,12 +356,12 @@ async def auto_posting(call: CallbackQuery):
     cur = db.cursor()
     cur.execute(f"SELECT balance FROM users WHERE id = '{call.from_user.id}'")
     data = cur.fetchone()
-    if float(data[0]) - 0.01 < 0:
+    if float(data[0]) - 99 < 0:
         msg = await call.message.answer(text='❌ Недостаточно средств')
         await asyncio.sleep(5)
         await msg.delete()
     else:
-        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 0.01} WHERE id = '{call.from_user.id}'")
+        cur.execute(f"UPDATE users SET balance = {float(data[0]) - 99} WHERE id = '{call.from_user.id}'")
         date = datetime.datetime.strptime(f'{datetime.date.today()}', '%Y-%m-%d')
         new_date = date + timedelta(days=7)
         cur.execute(
