@@ -40,7 +40,6 @@ async def text_def(id_of, user):
             f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
             f"{gr}\n"
             f"ID: {name[0][1]}")
-    print(user)
     return text
 
 async def average_rating(user):
@@ -125,14 +124,14 @@ async def feedback_chek_0(call: CallbackQuery, state: FSMContext):
     fb_score_main -= fb_score_main
 
 @rt_3.callback_query(F.data == '>>')
-async def feedback_chek_0(call: CallbackQuery):
+async def feedback_chek_1(call: CallbackQuery):
     global fb_score_main
     fb_score_main += 1
     scr = fb_score_main
     await fbs_def(call.message, fbs, scr, 'acc')
 
 @rt_3.callback_query(F.data == '<<')
-async def feedback_chek_0(call: CallbackQuery):
+async def feedback_chek_2(call: CallbackQuery):
     global fb_score_main
     if fb_score_main == 0:
         scr = fb_score_main
@@ -142,14 +141,14 @@ async def feedback_chek_0(call: CallbackQuery):
     await fbs_def(call.message, fbs, scr, 'acc')
 
 @rt_3.callback_query(F.data == '>')
-async def feedback_chek_0(call: CallbackQuery):
+async def feedback_chek_3(call: CallbackQuery):
     global fb_score_main
     fb_score_main += 1
     scr = fb_score_main
     await fbs_def(call.message, fbs, scr, 'fb')
 
 @rt_3.callback_query(F.data == '<')
-async def feedback_chek_0(call: CallbackQuery):
+async def feedback_chek_4(call: CallbackQuery):
     global fb_score_main
     if fb_score_main == 0:
         scr = fb_score_main
@@ -182,7 +181,7 @@ async def fbs_def(message, data_fbs, score, out):
                 f"<b>{date}</b>\n\n")
         if out == 'fb':
             rows = [[InlineKeyboardButton(text='<', callback_data='<'), InlineKeyboardButton(text=f'{score+1}/{fb_score}', callback_data='sfdgfdgdsf'), InlineKeyboardButton(text='>', callback_data='>')],
-                    [InlineKeyboardButton(text='‹ Назад', callback_data='chek_fb')]]
+                    [InlineKeyboardButton(text='‹ Назад', callback_data='fb_menu')]]
             if fb_score == 1:
                 for i in range(2):
                     rows[0].pop(0)
@@ -228,7 +227,7 @@ async def feedback_chek_group(message: Message, name):
     await fbs_def(message, fbs, 0, 'fb')
 
 @rt_3.message(fb_chek.user_name)
-async def feedback_chek_1(message: Message, state: FSMContext):
+async def feedback_chek_5(message: Message, state: FSMContext):
     global fb_score, data_fb, fbs
     await state.update_data(user_name=message.text)
     data_fb = await state.get_data()
@@ -313,7 +312,6 @@ async def feedback_4(call: CallbackQuery, state: FSMContext):
     msg = call.message
     await state.update_data(score=score)
     data = await state.get_data()
-    print(data)
     await call.message.edit_text(text=f"⬇️ Ваш отзыв\n\n"
                               f"{'⭐' * int(score)}{' ☆' * (5 - int(score))}\n\n"
                               f"<b>Кометарий:</b>\n"

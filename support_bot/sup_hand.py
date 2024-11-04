@@ -21,7 +21,6 @@ async def start_def(message: Message):
 
 @rt.message(Command('answer'), F.chat.type == 'group')
 async def answer_def(message: Message, bot: Bot):
-    print(message.chat.type)
     if message.text == '/answer':
         pass
     else:
@@ -34,7 +33,6 @@ async def answer_def(message: Message, bot: Bot):
 
 @rt.message()
 async def question_def(message: Message, bot: Bot):
-    print(message.chat.type)
     text = message.text
     text = (f'Вопрс от пользователя:\n'
             f' @{message.chat.username}\n\n'

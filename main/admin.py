@@ -25,12 +25,18 @@ class anban_user(StatesGroup):
 class del_of(StatesGroup):
     id = State()
 
+class plus(StatesGroup):
+    username = State()
+    col = State()
+
 @rt_4.message(Command('admin'))
-async def chek_admin(message: Message):
+async def chek_admin(message: Message, state: FSMContext):
+    await state.clear()
     rows = [[InlineKeyboardButton(text='Запуск авто-постинга', callback_data='ap')],
             [InlineKeyboardButton(text='Бан пользователя', callback_data='ban')],
             [InlineKeyboardButton(text='Разбан пользователя', callback_data='anban')],
-            [InlineKeyboardButton(text='Удалить объявление', callback_data='del_of')]]
+            [InlineKeyboardButton(text='Удалить объявление', callback_data='del_of')],
+            [InlineKeyboardButton(text='Начислить дуплонов', callback_data='plus_balance')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     if message.chat.id == ADMIN_LIST:
         await message.answer(text='Добро пожаловать', reply_markup=markup)
@@ -38,8 +44,8 @@ async def chek_admin(message: Message):
 @rt_4.callback_query(F.data == 'ap')
 async def auto_posting(call: CallbackQuery, bot: Bot):
     while True:
-        # if int(datetime.datetime.now(tz).time().hour) == 7:
-        if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
+        # if int(datetime.datetime.now(tz).time().hour) == int(datetime.datetime.now(tz).time().hour):
+        if int(datetime.datetime.now(tz).time().hour) == 7:
             db = sqlite3.connect('users.db')
             cur = db.cursor()
             cur.execute(f"SELECT offer_id_channel, final, seller FROM auto_posting")
@@ -68,6 +74,7 @@ async def auto_posting(call: CallbackQuery, bot: Bot):
                     db.close()
                 else:
                     await send_media(call, bot, i[0], i[2])
+            await bot.send_message(chat_id=ADMIN_LIST, text='Все объявления опубликованы')
             await asyncio.sleep(82800)
         await asyncio.sleep(600)
 
@@ -159,3 +166,28 @@ async def del_of_2(message: Message, state: FSMContext):
     db.commit()
     db.close()
     await message.answer(text='Объявление удалено из баз')
+
+@rt_4.callback_query(F.data == 'plus_balance')
+async def plus_1(call: CallbackQuery, state: FSMContext):
+    await call.message.edit_text('Отправьте username')
+    await state.set_state(plus.username)
+
+@rt_4.message(plus.username)
+async def plus_2(message: Message, state: FSMContext):
+    await state.update_data(username=message.text)
+    await message.answer('Отправьте на сколько увеличить баланс')
+    await state.set_state(plus.col)
+
+@rt_4.message(plus.col)
+async def plus_3(message: Message, state: FSMContext):
+    await state.update_data(col=message.text)
+    data = await state.get_data()
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f"SELECT balance FROM users WHERE username = '{data['username']}'")
+    balance = cur.fetchone()
+    cur.execute(f"UPDATE users SET balance= {int(balance[0]) + int(data['col'])} WHERE username = '{data['username']}'")
+    db.commit()
+    db.close()
+    await message.answer('Дуплоны зачислены')
+    await state.clear()

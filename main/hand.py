@@ -68,8 +68,8 @@ async def text_def(id_of, user):
             f"@{name[0][8]}\n"
             f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
             f"{gr}\n"
-            f"ID: {name[0][1]}")
-    print(user)
+            f"ID: {name[0][1]}\n\n"
+            f"<b><a href='t.me/VBaraholka_bot/?start'>Объявления публикуются с помощью бота</a></b>")
     return text
 
 async def start_def(message: Message):
@@ -83,7 +83,7 @@ async def start_def(message: Message):
             [buttons[6], buttons[8]],
             [buttons[0]]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await message.answer(text=main_text, reply_markup=markup, parse_mode='HTML')
+    await message.answer(text=main_text, reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)
 
 @rt.message(Command(commands=['start', 'menu']), F.chat.type == 'private')
 async def start(message: Message, bot: Bot):
@@ -101,7 +101,7 @@ async def start(message: Message, bot: Bot):
     cur = db.cursor()
     cur.execute(f"SELECT id FROM users WHERE id = '{message.chat.id}'")
     info = cur.fetchone()
-    if message.text == '/start' or '/menu':
+    if message.text in ['/start', '/menu']:
         ref = None
         await message.answer(text=main_text, reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)
     else:
@@ -110,22 +110,29 @@ async def start(message: Message, bot: Bot):
             ref = ref.replace('2_', '')
             await feedback_chek_group(message, ref)
         elif ref[0:2] == '1_':
-            if ref[2:] == str(message.chat.id):
-                ref = None
-            else:
-                cur.execute(f"SELECT id FROM users WHERE id = '{ref[2:]}'")
-                cur.execute(f"SELECT col_ref FROM users WHERE id = '{ref[2:]}'")
+            ref = ref.replace('1_', '')
+            cur.execute(f"SELECT id FROM users WHERE id = {message.chat.id}")
+            user = cur.fetchall()
+            if user == []:
+                cur.execute(f"SELECT id FROM users WHERE id = '{ref}'")
+                cur.execute(f"SELECT col_ref FROM users WHERE id = '{ref}'")
                 col_ref = cur.fetchall()
-                cur.execute(f"Update users set 'col_ref' = '{int(col_ref[0][0]) + 1}' where id = '{ref[2:]}'")
-                await bot.send_message(chat_id=int(ref[2:]), text='🎉 Поздравляем!\n'
-                                                                  'У вас новый реферальный пользователь.\n\n'
-                                                                  f'Ваших рефералов теперь: {col_ref[0][0]}')
+                cur.execute(f"SELECT balance FROM users WHERE id = '{ref}'")
+                balance = cur.fetchall()
+                cur.execute(f"Update users set 'col_ref' = '{int(col_ref[0][0]) + 1}' where id = '{ref}'")
+                cur.execute(f"Update users set balance = {int(balance[0][0]) + 50} where id = {ref}")
+                await bot.send_message(chat_id=int(ref), text='🎉 Поздравляем!\n'
+                                                              'У вас новый реферальный пользователь.\n'
+                                                              f'На ваш баланс начислено 50₽\n\n'
+                                                              f'Ваших рефералов теперь {int(col_ref[0][0]) + 1}\n')
+            else:
+                ref = None
             await message.answer(text=main_text, reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)
     if info == None:
         if ref == None:
             cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', 'None')")
         else:
-            cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', '{ref[2:]}')")
+            cur.execute(f"INSERT INTO users VALUES ('{message.chat.id}', '{message.chat.username}', '0', '0', '{ref}')")
     db.commit()
     db.close()
 
@@ -370,7 +377,8 @@ async def send_0(callback: CallbackQuery, bot: Bot):
         media = [types.InputMediaPhoto(media=photo[0], caption=text, parse_mode="HTML")]
 
     send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media, reply_to_message_id=REPLY_TO)
-    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}', parse_mode="HTML")
+    await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}\n\n'
+                                                                                                        f'<b><a href="t.me/VBaraholka_bot/?start">Объявления публикуются с помощью бота</a></b>', parse_mode="HTML")
 
     a = ''
     for i in data_state['photo']:
@@ -463,6 +471,7 @@ async def forward(message, offer_data):
     a = a.split('|')
     a.pop(0)
     text = await text_def(offer_data, message.chat.username)
+    text = text.replace('Объявления публикуются с помощью бота', '')
     builder = MediaGroupBuilder(caption=text)
     for i in a:
         builder.add_photo(media=f'{i}', parse_mode="HTML")
@@ -579,7 +588,6 @@ async def back_edit(call: CallbackQuery, bot: Bot):
                 f"{name[0][6]} 📍\n\n"
                 f"@{name[0][8]}\n"
                 f"<a href='t.me/VBaraholka_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
-                f"#{name[0][7]}\n"
                 f"ID: {name[0][1]}")
         await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=call_data, caption=text, parse_mode="HTML")
 
@@ -698,6 +706,8 @@ async def edit_photo_2(message: Message, state: FSMContext, bot: Bot):
                 send_media_msg = await edit_media(message, edit_photo_list)
                 await message.answer(text='⬆️ Вот так теперь выглядит ваше объявление', reply_markup=markup_2)
                 await state.clear()
+            elif col > col_photos:
+                pass
             else:
                 await message.answer(text=f'Фото добавлено – {col} из {col_photos}. Еще одно?', reply_markup=markup)
     except TypeError:
