@@ -10,8 +10,8 @@ import datetime
 from datetime import timedelta
 
 from reply import buttons
-from hand import offer_def, id_list_dispatch, id_list_auto, forward, average_rating, del_media, edit_def, start_def, text_def
-from inf import CRYPTO, CHANNEL_ID
+from hand import offer_def, forward,start_def, text_def
+from inf import CRYPTO
 tz = pytz.timezone("Europe/Samara")
 
 rt_5 = Router()

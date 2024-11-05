@@ -36,7 +36,8 @@ async def chek_admin(message: Message, state: FSMContext):
             [InlineKeyboardButton(text='Бан пользователя', callback_data='ban')],
             [InlineKeyboardButton(text='Разбан пользователя', callback_data='anban')],
             [InlineKeyboardButton(text='Удалить объявление', callback_data='del_of')],
-            [InlineKeyboardButton(text='Начислить дуплонов', callback_data='plus_balance')]]
+            [InlineKeyboardButton(text='Начислить дуплонов', callback_data='plus_balance')],
+            [InlineKeyboardButton(text='output db', callback_data='db')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     if message.chat.id == ADMIN_LIST:
         await message.answer(text='Добро пожаловать', reply_markup=markup)
@@ -191,3 +192,20 @@ async def plus_3(message: Message, state: FSMContext):
     db.close()
     await message.answer('Дуплоны зачислены')
     await state.clear()
+
+@rt_4.callback_query(F.data == 'db')
+async def ex(call: CallbackQuery):
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    name = cur.fetchall()
+    for i in name:
+        a = f'{i[0]}\n\n'
+        cur.execute(f"SELECT * FROM {i[0]}")
+        data = cur.fetchall()
+        if data != []:
+            for i in data:
+                a = a + f"{i}\n"
+        await call.message.answer(text=f"{a}")
+    db.commit()
+    db.close()

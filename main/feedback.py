@@ -7,6 +7,7 @@ import sqlite3
 import asyncio
 from datetime import date
 from reply import buttons
+from inf import GROUP
 
 rt_3 = Router()
 fb_score_main = 0
@@ -75,7 +76,7 @@ async def forward_fb(message, id):
         for i in a:
             builder.add_photo(media=f'{i}', parse_mode="HTML")
         await message.answer_media_group(media=builder.build())
-        return name
+        return id
     except:
         return 'error'
 
@@ -177,7 +178,7 @@ async def fbs_def(message, data_fbs, score, out):
         text = (f"<b>@{data_fbs[score][1]}</b> {srznch} ({fb_score})\n"
                 f"<a href='https://t.me/TLT_Vape_Baraholka/{data_fbs[score][0]}'>Объявление</a>\n\n"
                 f"{'⭐' * data_fbs[score][3]}{' ☆' * (5 - data_fbs[score][3])}\n"
-                f"<b>Коментарий:</b>\n{data_fbs[score][2]}\n\n"
+                f"<b>Комментарий:</b>\n{data_fbs[score][2]}\n\n"
                 f"<b>{date}</b>\n\n")
         if out == 'fb':
             rows = [[InlineKeyboardButton(text='<', callback_data='<'), InlineKeyboardButton(text=f'{score+1}/{fb_score}', callback_data='sfdgfdgdsf'), InlineKeyboardButton(text='>', callback_data='>')],
@@ -273,7 +274,7 @@ async def feedback_2(message: Message, state: FSMContext):
     db.close()
     if db_var_2 != None:
         await state.clear()
-        await message.answer('❌ Вы уже осталяли отзыв на это объявление')
+        await message.answer('❌ Вы уже оставляли отзыв на это объявление')
         await feedback_1_2(message, state)
     else:
         if db_var == []:
@@ -285,8 +286,8 @@ async def feedback_2(message: Message, state: FSMContext):
             await feedback_1_2(message, state)
         else:
             deff = await forward_fb(message, data['id'])
-            await message.answer(text='❗Убедитесь что верно выбранно объявление❗\n\n'
-                                         'Напишите коментарий')
+            await message.answer(text='❗Убедитесь что верно выбрано объявление❗\n\n'
+                                         'Напишите комментарий')
             await state.set_state(feedback_class_2.text_fb)
 
 @rt_3.message(feedback_class_2.text_fb)
@@ -296,7 +297,7 @@ async def feedback_3(message: Message, state: FSMContext):
             [InlineKeyboardButton(text='3', callback_data='fb_3'), InlineKeyboardButton(text='4', callback_data='fb_4')],
             [InlineKeyboardButton(text='5', callback_data='fb_5')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await message.answer(text='Поставте оценку от 1 до 5', reply_markup=markup)
+    await message.answer(text='Поставьте оценку от 1 до 5', reply_markup=markup)
 
 @rt_3.callback_query(F.data == 'fb_1')
 @rt_3.callback_query(F.data == 'fb_2')
@@ -307,36 +308,37 @@ async def feedback_4(call: CallbackQuery, state: FSMContext):
     global data, msg
     score = call.data.replace('fb_', '')
     rows = [[InlineKeyboardButton(text='Опубликовать', callback_data='publish_yes')],
-            [InlineKeyboardButton(text='Заполнить отзыв занова', callback_data='fb_yes')]]
+            [InlineKeyboardButton(text='Заполнить отзыв заново', callback_data='send_fb')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     msg = call.message
     await state.update_data(score=score)
     data = await state.get_data()
     await call.message.edit_text(text=f"⬇️ Ваш отзыв\n\n"
                               f"{'⭐' * int(score)}{' ☆' * (5 - int(score))}\n\n"
-                              f"<b>Кометарий:</b>\n"
+                              f"<b>Комментарий:</b>\n"
                               f"{data['text_fb']}\n", reply_markup=markup, parse_mode="html")
     await state.clear()
 
 @rt_3.callback_query(F.data == 'publish_yes')
 async def fb_data_4_1(call: CallbackQuery, bot: Bot, state: FSMContext):
     msg_2 = await call.message.edit_text('📢 Отзыв опубликован')
+    db = sqlite3.connect('users.db')
+    cur = db.cursor()
+    cur.execute(f'SELECT seller FROM users_offer WHERE offer_id_channel = "{data['id']}"')
+    seller = cur.fetchone()
+    cur.execute(f"INSERT INTO fb_offer VALUES ('{data['id']}', '{seller[0]}', '{data['text_fb']}', '{data['score']}', '{msg.from_user.id}', '{date.today()}')")
+    db.commit()
+    db.close()
     await start_def(call.message)
     await asyncio.sleep(3)
     await msg_2.delete()
-    db = sqlite3.connect('users.db')
-    cur = db.cursor()
-    cur.execute(f"INSERT INTO fb_offer VALUES ('{deff[0][1]}', '{deff[0][8]}', '{data['text_fb']}', '{data['score']}', '{msg.from_user.id}', '{date.today()}')")
-    db.commit()
-    db.close()
     await state.clear()
 
 async def start_def(message: Message):
     rows = [[buttons[5], buttons[1]],
-            [buttons[6], InlineKeyboardButton(text='🆘 Тех. поддрежка', url='t.me/Kukuru3a')],
+            [buttons[6], buttons[8]],
             [buttons[0]]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await message.answer(text=f'<b>💨 VБарахолка 💨</b>\n\n'
-                              f'Покупайте, продавайте под системы, кальяты и т.д.\n\n'
-                              f'Подпичывайтесь на наш канал.\n\n'
-                              f'Ваши объявления публикуются здесь.', reply_markup=markup, parse_mode='HTML')
+    await message.answer(text=f'<b>💨 Puff Bot 💨</b>\n\n'\
+            f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
+            , reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)

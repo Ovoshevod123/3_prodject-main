@@ -8,7 +8,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 import sqlite3
 import asyncio
 from reply import buttons, but_del, edit_but, buttons_edit
-from inf import CHANNEL_ID, REPLY_TO, CHANNEL, GROUP
+from inf import CHANNEL_ID, REPLY_TO, GROUP
 from feedback import average_rating, account_fb, feedback_chek_group
 
 rt = Router()
@@ -28,9 +28,7 @@ rows_new_1 = [[InlineKeyboardButton(text='POD-система (Подик)', call
               [buttons[4]]]
 
 main_text = f'<b>💨 Puff Bot 💨</b>\n\n'\
-            f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>\n\n'\
-            f'Подписывайтесь на наш <b><a href="{CHANNEL}">канал</a></b>.\n'\
-            f'Ваши объявления публикуются <b><a href="{GROUP}">здесь</a></b>.'
+            f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
 
 class new_product(StatesGroup):
     group = State()
@@ -197,9 +195,9 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
     data = cur.fetchone()
     db.commit()
     db.close()
-    if call.from_user.id != None:
+    if call.from_user.username != None:
         if data != None:
-            await call.message.answer("Вам запрещена публикация объявлений из за нарушения правил бота")
+            await call.message.answer("Вам запрещена публикация объявлений из за нарушения правил барахолки")
         else:
             global chek_ub
             chek_ub.clear()
@@ -350,7 +348,7 @@ async def new_6(message: Message, state: FSMContext, bot: Bot, ):
         rows = [[buttons[3]],
                 [buttons[2]]]
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
-        await message.answer(text='⬆️ Вот так будет выглядить ваше объяевление', reply_markup=markup)
+        await message.answer(text='⬆️ Вот так будет выглядеть ваше объявление', reply_markup=markup)
         await state.clear()
 
 @rt.callback_query(F.data == 'good')
@@ -740,7 +738,6 @@ async def edit_photo_2(call: CallbackQuery, bot: Bot):
             else:
                 await bot.edit_message_media(media=InputMediaPhoto(media=photos, parse_mode='html'), chat_id=CHANNEL_ID, message_id=ii)
         except:
-            # await call.message.answer(text='Вы пытветесь изменить фото на такое же!\nИзменения не были внесены!')
             pass
     del iii
     if len(a) < col_photos:

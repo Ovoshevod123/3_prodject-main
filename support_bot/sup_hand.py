@@ -1,11 +1,7 @@
-from aiogram import types, Router, F, Bot
-from aiogram.fsm.context import FSMContext
+from aiogram import Router, F, Bot
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import Message
 from aiogram.filters import Command
-from aiogram.utils.media_group import MediaGroupBuilder
-import sqlite3
-import asyncio
 from sup_inf import CHANNEL_ID
 
 rt = Router()
@@ -34,7 +30,7 @@ async def answer_def(message: Message, bot: Bot):
 @rt.message()
 async def question_def(message: Message, bot: Bot):
     text = message.text
-    text = (f'Вопрс от пользователя:\n'
+    text = (f'Вопрос от пользователя:\n'
             f' @{message.chat.username}\n\n'
             f'Вопрос:\n'
             f'<blockquote>{text}</blockquote>\n\n'

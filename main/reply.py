@@ -4,7 +4,7 @@ import sqlite3
 
 rt_2 = Router()
 
-new = InlineKeyboardButton(text='+ Новое оъявление +', callback_data='new')
+new = InlineKeyboardButton(text='+ Новое объявление +', callback_data='new')
 my_off = InlineKeyboardButton(text='Мои объявления', callback_data='my_off')
 back = InlineKeyboardButton(text='‹ Назад', callback_data='back')
 new_2 = InlineKeyboardButton(text='Заполнить заново', callback_data='new')
