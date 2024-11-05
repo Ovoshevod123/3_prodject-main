@@ -12,7 +12,7 @@ good = InlineKeyboardButton(text='Опубликовать', callback_data='good
 pay = InlineKeyboardButton(text='💵 Платные тарифы', callback_data='pay')
 fb = InlineKeyboardButton(text='📄 Меню отзывов', callback_data='fb_menu')
 account = InlineKeyboardButton(text='👤 Личный кабинет', callback_data='account')
-help = InlineKeyboardButton(text='🆘 Тех. поддержка', url='t.me/VBaraholka_support_bot')
+help = InlineKeyboardButton(text='🆘 Тех. поддержка', url='t.me/Vaps_Support_bot')
 
 delete_final = InlineKeyboardButton(text='Удалить', callback_data='dell')
 edit = InlineKeyboardButton(text='Редактировать', callback_data='edit')

@@ -27,7 +27,7 @@ rows_new_1 = [[InlineKeyboardButton(text='POD-система (Подик)', call
               [InlineKeyboardButton(text='Другое', callback_data='Другое')],
               [buttons[4]]]
 
-main_text = f'<b>💨 Puff Bot 💨</b>\n\n'\
+main_text = f'<b>💨 Vaps Bot 💨</b>\n\n'\
             f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
 
 class new_product(StatesGroup):
@@ -64,10 +64,10 @@ async def text_def(id_of, user):
             f"{name[0][4]}\n"
             f"{name[0][6]} 📍\n\n"
             f"@{name[0][8]}\n"
-            f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+            f"<a href='t.me/Second_Vaps_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
             f"{gr}\n"
             f"ID: {name[0][1]}\n\n"
-            f"<b><a href='t.me/VBaraholka_bot/?start'>Объявления публикуются с помощью бота</a></b>")
+            f"<b><a href='t.me/Second_Vaps_bot/?start'>Объявления публикуются с помощью бота</a></b>")
     return text
 
 async def start_def(message: Message):
@@ -376,7 +376,7 @@ async def send_0(callback: CallbackQuery, bot: Bot):
 
     send_02 = await bot.send_media_group(chat_id=CHANNEL_ID, media=media, reply_to_message_id=REPLY_TO)
     await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=send_02[0].message_id, caption=text + f'ID: {send_02[0].message_id}\n\n'
-                                                                                                        f'<b><a href="t.me/VBaraholka_bot/?start">Объявления публикуются с помощью бота</a></b>', parse_mode="HTML")
+                                                                                                        f'<b><a href="t.me/Second_Vaps_bot/?start">Объявления публикуются с помощью бота</a></b>', parse_mode="HTML")
 
     a = ''
     for i in data_state['photo']:
@@ -393,7 +393,7 @@ async def send_0(callback: CallbackQuery, bot: Bot):
     db.close()
 
     a = await callback.message.edit_text(
-        text=f'Ваше объявление опубликовано <a href="https://t.me/TLT_Vape_Baraholka/{send_02[0].message_id}">здесь</a>.',
+        text=f'Ваше объявление опубликовано <a href="{GROUP}/{send_02[0].message_id}">здесь</a>.',
         parse_mode='HTML',disable_web_page_preview=True)
     await start_def(callback.message)
     await asyncio.sleep(10)
@@ -510,7 +510,7 @@ async def del_media(call, bot, id_offer):
                     f"{name[0][4]}\n"
                     f"{name[0][6]} 📍\n\n"
                     f"@{name[0][8]}\n"
-                    f"<a href='t.me/VBaraholka_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+                    f"<a href='t.me/Second_Vaps_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
                     f"#{name[0][7]}\n"
                     f"ID: {name[0][1]}")
             await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=id_offer, caption=text, parse_mode="HTML")
@@ -585,7 +585,7 @@ async def back_edit(call: CallbackQuery, bot: Bot):
                 f"{name[0][4]}\n"
                 f"{name[0][6]} 📍\n\n"
                 f"@{name[0][8]}\n"
-                f"<a href='t.me/VBaraholka_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+                f"<a href='t.me/Second_Vaps_bot/?start=2_{call.from_user.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
                 f"ID: {name[0][1]}")
         await bot.edit_message_caption(chat_id=CHANNEL_ID, message_id=call_data, caption=text, parse_mode="HTML")
 
@@ -801,7 +801,7 @@ async def send_media(message, user, what_edit, edit):
             f"{offer[4]}\n"
             f"{offer[6]} 📍\n\n"
             f"@{offer[8]}\n"
-            f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+            f"<a href='t.me/Second_Vaps_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
             f"{gr}\n"
             f"ID: {offer[1]}")
 

@@ -38,7 +38,7 @@ async def text_def(id_of, user):
             f"{name[0][4]}\n"
             f"{name[0][6]} 📍\n\n"
             f"@{name[0][8]}\n"
-            f"<a href='t.me/VBaraholka_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+            f"<a href='t.me/Second_Vaps_bot/?start=2_{user}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
             f"{gr}\n"
             f"ID: {name[0][1]}")
     return text
@@ -176,7 +176,7 @@ async def fbs_def(message, data_fbs, score, out):
         date = str(data_fbs[score][5]).split('-')
         date = f"{date[2]}.{date[1]}.{date[0]}"
         text = (f"<b>@{data_fbs[score][1]}</b> {srznch} ({fb_score})\n"
-                f"<a href='https://t.me/TLT_Vape_Baraholka/{data_fbs[score][0]}'>Объявление</a>\n\n"
+                f"<a href='t.me/Second_Vaps_TLT/{data_fbs[score][0]}'>Объявление</a>\n\n"
                 f"{'⭐' * data_fbs[score][3]}{' ☆' * (5 - data_fbs[score][3])}\n"
                 f"<b>Комментарий:</b>\n{data_fbs[score][2]}\n\n"
                 f"<b>{date}</b>\n\n")
@@ -339,6 +339,6 @@ async def start_def(message: Message):
             [buttons[6], buttons[8]],
             [buttons[0]]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await message.answer(text=f'<b>💨 Puff Bot 💨</b>\n\n'\
+    await message.answer(text=f'<b>💨 Vaps Bot 💨</b>\n\n'\
             f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
             , reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)

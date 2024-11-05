@@ -10,7 +10,7 @@ import datetime
 from datetime import timedelta
 
 from reply import buttons
-from hand import offer_def, forward,start_def, text_def
+from hand import offer_def, forward,start_def, text_def, id_list_dispatch, id_list_auto
 from inf import CRYPTO
 tz = pytz.timezone("Europe/Samara")
 
