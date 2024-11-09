@@ -205,7 +205,7 @@ async def ex(call: CallbackQuery):
         data = cur.fetchall()
         if data != []:
             for i in data:
-                a = a + f"{i}\n"
+                a = a + f"{i}\n\n".replace(',', '\n')
         await call.message.answer(text=f"{a}")
     db.commit()
     db.close()

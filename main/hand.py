@@ -28,7 +28,7 @@ rows_new_1 = [[InlineKeyboardButton(text='POD-система (Подик)', call
               [buttons[4]]]
 
 main_text = f'<b>💨 Vaps Bot 💨</b>\n\n'\
-            f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
+            f'Покупайте / продавайте / обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
 
 class new_product(StatesGroup):
     group = State()
@@ -75,6 +75,7 @@ async def start_def(message: Message):
     try:
         await msg_photo.delete()
         await msg_2.delete()
+        await edit_msg.delete()
     except:
         pass
     rows = [[buttons[5], buttons[1]],
@@ -213,7 +214,12 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
                                               f'📣 Вы начали заполнение нового объявления\n\n'
                                               f'Выберите категории объявления:',reply_markup=markup, parse_mode='html')
     else:
-        await call.message.answer('У тебя нету публичного username, из за этого пользователи не смогут перейти в твой профиль и написать тебе\n\nПерейди в настройки Telegram и создай свой публичный username')
+        await call.message.delete()
+        msg = await call.message.answer_photo(photo=(types.FSInputFile(path='C:\\Python\\project\\3_prodject-main\\photo\\username.jpg')), caption='У вас не введено имя пользователя, из за этого другие пользователи не смогут перейти в ваш профиль и написать вам\n\n'
+                                  'Перейдите в настройки Telegram и введите имя пользователя')
+        await start_def(call.message)
+        await asyncio.sleep(30)
+        await msg.delete()
 
 @rt.callback_query(F.data == 'POD_система')
 @rt.callback_query(F.data == 'Жидкость')
@@ -274,7 +280,8 @@ async def new_2_2(message: Message, state: FSMContext):
                 await state.update_data(photo=photo)
                 await state.set_state(new_product.name)
             elif col > 5:
-                await message.answer(text='Вы отправили больше 5 фото')
+                # await message.answer(text='Вы отправили больше 5 фото')
+                pass
             else:
                 msg_photo = await message.answer(text=f'Фото добавлено – {col} из 5\nЕще одно?', reply_markup=markup)
     except TypeError:
@@ -339,7 +346,7 @@ async def new_6(message: Message, state: FSMContext, bot: Bot, ):
                 f"{data['description']}\n"
                 f"{data['locate']} 📍\n\n"
                 f"@{message.chat.username}\n"
-                f"<a href='t.me/VBaraholka_bot/?start=2_{message.chat.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
+                f"<a href='t.me/Second_Vaps_bot/?start=2_{message.chat.username}'>{average[0]} ({average[1]})</a> {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}\n\n"
                 f"{gr}\n")
         builder = MediaGroupBuilder(caption=text)
         for i in data['photo']:
@@ -438,7 +445,7 @@ async def account(call: CallbackQuery):
                                 f'👤 <b>Личный кабинет</b>\n\n'
                                 f'💰 <b>Баланс: </b>{balance[0]} ₽\n\n'
                                 f'📣 <b>Количество объявлений: </b>{col}\n\n'
-                                f'🏆 <b>Рейтинг:  </b>{average[0]}({average[1]}) {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}'
+                                f'🏆 <b>Рейтинг:  </b>{average[0]} ({average[1]}) {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}'
                                  , reply_markup=markup, parse_mode='HTML')
 
 @rt.callback_query(F.data == 'stat')
@@ -452,7 +459,7 @@ async def delete_0(call: CallbackQuery):
               [InlineKeyboardButton(text='‹ Назад', callback_data='account')]]
     if len(rows) == 1:
         markup = InlineKeyboardMarkup(inline_keyboard=rows_2)
-        await call.message.edit_text(text='У вас нет активных объявлений(\n\nХотите создать новое объявление?', reply_markup=markup)
+        await call.message.edit_text(text='У вас нет активных объявлений.\n\nХотите создать новое объявление?', reply_markup=markup)
     else:
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
         await call.message.edit_text(text='⬇️ <b>Это ваши объявления</b>\n\n'
@@ -669,7 +676,7 @@ async def search(a):
 
 @rt.message(edit_product.photo)
 async def edit_photo_2(message: Message, state: FSMContext, bot: Bot):
-    global send_media_msg, gl_data
+    global send_media_msg, gl_data, edit_msg
     kb = [[types.KeyboardButton(text="Это все, сохранить фото")]]
     markup = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     but = [[types.InlineKeyboardButton(text="Внести изменения", callback_data='edit_yes_photo')],
@@ -685,14 +692,14 @@ async def edit_photo_2(message: Message, state: FSMContext, bot: Bot):
                 a = a + '|' + i
             send_media_msg = await edit_media(message, a)
             await message.answer(text='⬆️ Вот так теперь выглядит ваше объявление', reply_markup=markup_2)
+            await edit_msg.delete()
             await state.clear()
         else:
             photo_1 = message.photo
             photo.append(photo_1[-1].file_id)
             col = len(photo)
             if col == col_photos:
-                await message.answer(text=f'Фото добавлено – {col_photos} из {col_photos}',
-                                     reply_markup=types.ReplyKeyboardRemove())
+                await message.answer(text=f'Фото добавлено – {col_photos} из {col_photos}')
                 while len(photo) > col_photos:
                     photo.pop()
                 await state.update_data(photo=photo)
@@ -703,11 +710,12 @@ async def edit_photo_2(message: Message, state: FSMContext, bot: Bot):
                     edit_photo_list = edit_photo_list + '|' + i
                 send_media_msg = await edit_media(message, edit_photo_list)
                 await message.answer(text='⬆️ Вот так теперь выглядит ваше объявление', reply_markup=markup_2)
+                await edit_msg.delete()
                 await state.clear()
             elif col > col_photos:
                 pass
             else:
-                await message.answer(text=f'Фото добавлено – {col} из {col_photos}. Еще одно?', reply_markup=markup)
+                edit_msg = await message.answer(text=f'Фото добавлено – {col} из {col_photos}. Еще одно?', reply_markup=markup)
     except TypeError:
         await message.answer(text='Пришлите фото!')
 

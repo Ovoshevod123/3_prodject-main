@@ -1,4 +1,4 @@
-from aiogram import Router, F, Bot
+from aiogram import types, Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
@@ -119,7 +119,7 @@ async def feedback_chek_0(call: CallbackQuery, state: FSMContext):
     global fb_score_main
     rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='fb_back_1')]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await call.message.edit_text(text='Введите имя пользователя, без @\n\n'
+    await call.message.edit_text(text='Введите имя пользователя\n'
                                       '(Пример: @name)', reply_markup=markup)
     await state.set_state(fb_chek.user_name)
     fb_score_main -= fb_score_main
@@ -160,14 +160,9 @@ async def feedback_chek_4(call: CallbackQuery):
 
 async def fbs_def(message, data_fbs, score, out):
     if fb_score == 0:
-        if out == 'fb':
-            rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='chek_fb')]]
-            markup = InlineKeyboardMarkup(inline_keyboard=rows)
-            await message.answer(text='У этого пользователя пока что нет отзывов', reply_markup=markup)
-        else:
-            rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='account')]]
-            markup = InlineKeyboardMarkup(inline_keyboard=rows)
-            await message.edit_text(text='У вас пока что нету отзывов', reply_markup=markup)
+        rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='account')]]
+        markup = InlineKeyboardMarkup(inline_keyboard=rows)
+        await message.edit_text(text='У вас пока что нету отзывов', reply_markup=markup)
     else:
         frst = 0
         for i in data_fbs:
@@ -184,8 +179,8 @@ async def fbs_def(message, data_fbs, score, out):
             rows = [[InlineKeyboardButton(text='<', callback_data='<'), InlineKeyboardButton(text=f'{score+1}/{fb_score}', callback_data='sfdgfdgdsf'), InlineKeyboardButton(text='>', callback_data='>')],
                     [InlineKeyboardButton(text='‹ Назад', callback_data='fb_menu')]]
             if fb_score == 1:
-                for i in range(2):
-                    rows[0].pop(0)
+                rows[0].pop(0)
+                rows[0].pop(1)
                 markup = InlineKeyboardMarkup(inline_keyboard=rows)
             elif score == 0:
                 rows[0].pop(0)
@@ -199,8 +194,8 @@ async def fbs_def(message, data_fbs, score, out):
             rows = [[InlineKeyboardButton(text='<', callback_data='<<'), InlineKeyboardButton(text=f'{score+1}/{fb_score}', callback_data='sfdgfdgdsf'),InlineKeyboardButton(text='>', callback_data='>>')],
                     [InlineKeyboardButton(text='‹ Назад', callback_data='account')]]
             if fb_score == 1:
-                for i in range(2):
-                    rows[0].pop(0)
+                rows[0].pop(0)
+                rows[0].pop(1)
                 markup = InlineKeyboardMarkup(inline_keyboard=rows)
             elif score == 0:
                 rows[0].pop(0)
@@ -232,7 +227,7 @@ async def feedback_chek_5(message: Message, state: FSMContext):
     global fb_score, data_fb, fbs
     await state.update_data(user_name=message.text)
     data_fb = await state.get_data()
-    data_fb = data_fb['user_name']
+    data_fb = data_fb['user_name'].replace('@', '')
     db = sqlite3.connect('users.db')
     cur = db.cursor()
     cur.execute(f"SELECT * FROM fb_offer WHERE seller = '{data_fb}'")
@@ -240,8 +235,16 @@ async def feedback_chek_5(message: Message, state: FSMContext):
     db.commit()
     db.close()
     fb_score = len(fbs)
-    await fbs_def(message, fbs, 0, 'fb')
-    await state.clear()
+    if fb_score == 0:
+        rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='fb_menu')]]
+        markup = InlineKeyboardMarkup(inline_keyboard=rows)
+        await message.answer(text='У этого пользователя пока что нет отзывов\n\n'
+                                  'Введите имя пользователя\n'
+                                  '(Пример: @name)', reply_markup=markup)
+        await state.set_state(fb_chek.user_name)
+    else:
+        await fbs_def(message, fbs, 0, 'fb')
+        await state.clear()
 
 @rt_3.callback_query(F.data == 'send_fb')
 async def feedback_1(call: CallbackQuery, state: FSMContext):
@@ -292,12 +295,15 @@ async def feedback_2(message: Message, state: FSMContext):
 
 @rt_3.message(feedback_class_2.text_fb)
 async def feedback_3(message: Message, state: FSMContext):
-    await state.update_data(text_fb=message.text)
-    rows = [[InlineKeyboardButton(text='1', callback_data='fb_1'), InlineKeyboardButton(text='2', callback_data='fb_2')],
-            [InlineKeyboardButton(text='3', callback_data='fb_3'), InlineKeyboardButton(text='4', callback_data='fb_4')],
-            [InlineKeyboardButton(text='5', callback_data='fb_5')]]
-    markup = InlineKeyboardMarkup(inline_keyboard=rows)
-    await message.answer(text='Поставьте оценку от 1 до 5', reply_markup=markup)
+    if message.content_type != types.ContentType.TEXT:
+        await message.answer(text='Пришлите текст!')
+    else:
+        await state.update_data(text_fb=message.text)
+        rows = [[InlineKeyboardButton(text='1', callback_data='fb_1'), InlineKeyboardButton(text='2', callback_data='fb_2')],
+                [InlineKeyboardButton(text='3', callback_data='fb_3'), InlineKeyboardButton(text='4', callback_data='fb_4')],
+                [InlineKeyboardButton(text='5', callback_data='fb_5')]]
+        markup = InlineKeyboardMarkup(inline_keyboard=rows)
+        await message.answer(text='Поставьте оценку от 1 до 5', reply_markup=markup)
 
 @rt_3.callback_query(F.data == 'fb_1')
 @rt_3.callback_query(F.data == 'fb_2')
@@ -340,5 +346,5 @@ async def start_def(message: Message):
             [buttons[0]]]
     markup = InlineKeyboardMarkup(inline_keyboard=rows)
     await message.answer(text=f'<b>💨 Vaps Bot 💨</b>\n\n'\
-            f'Покупайте, продавайте, обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
+            f'Покупайте / продавайте / обменивайте <i><b>POD-системы(подики)</b></i>, <i><b>жидкости</b></i>, все <i><b>расходники</b></i> для POD-систем и другое <b><a href="{GROUP}">здесь</a></b>'
             , reply_markup=markup, parse_mode='HTML', disable_web_page_preview=True)
