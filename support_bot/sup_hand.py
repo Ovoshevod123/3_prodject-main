@@ -15,7 +15,7 @@ async def start_def(message: Message):
                               f'Просто напиши свой вопрос и он автоматически отправится администратору😊')
 
 
-@rt.message(Command('answer'), F.chat.type == 'group')
+@rt.message(Command('answer'), F.chat.type == 'supergroup')
 async def answer_def(message: Message, bot: Bot):
     if message.text == '/answer':
         pass
@@ -27,7 +27,7 @@ async def answer_def(message: Message, bot: Bot):
                                                           f"<blockquote>{text}</blockquote>", parse_mode='html')
         await message.answer(text='✉️ Ответ отправлен')
 
-@rt.message()
+@rt.message(F.chat.type == 'private')
 async def question_def(message: Message, bot: Bot):
     text = message.text
     text = (f'Вопрос от пользователя:\n'

@@ -17,5 +17,5 @@ async def ref_1(call: CallbackQuery):
     await call.message.edit_text(text=f'<b>👥 Меню реферальной системы</b>\n\n'
                                       f'🗣 <b>Кол-во ваших рефералов:</b> {col_ref[0]}\n\n'
                                       f'🔗 <b>Ваша реферальная ссылка:</b>\n'
-                                      f'<code>t.me/Second_Vaps_TLT/?start=1_{call.message.chat.id}</code>\n\n'
+                                      f'<code>t.me/Second_Vaps_bot/?start=1_{call.message.chat.id}</code>\n\n'
                                       f'<i><b>За каждого приглашенного пользователя вам начисляется на внутренний счет 50 ₽</b></i>\n'  , reply_markup=markup, parse_mode='html')

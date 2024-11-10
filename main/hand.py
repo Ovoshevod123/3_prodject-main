@@ -215,8 +215,9 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
                                               f'Выберите категории объявления:',reply_markup=markup, parse_mode='html')
     else:
         await call.message.delete()
-        msg = await call.message.answer_photo(photo=(types.FSInputFile(path='C:\\Python\\project\\3_prodject-main\\photo\\username.jpg')), caption='У вас не введено имя пользователя, из за этого другие пользователи не смогут перейти в ваш профиль и написать вам\n\n'
-                                  'Перейдите в настройки Telegram и введите имя пользователя')
+        msg = await call.message.answer_photo(photo=(types.FSInputFile(path='C:\\Python\\project\\3_prodject-main\\photo\\username.jpg')),
+                                              caption='У вас не введено имя пользователя, из за этого другие пользователи не смогут перейти в ваш профиль и написать вам.\n\n'
+                                                      'Перейдите в настройки Telegram и введите имя пользователя.')
         await start_def(call.message)
         await asyncio.sleep(30)
         await msg.delete()
@@ -443,7 +444,7 @@ async def account(call: CallbackQuery):
     average = await average_rating(call.message.chat.username)
     await call.message.edit_text(text=
                                 f'👤 <b>Личный кабинет</b>\n\n'
-                                f'💰 <b>Баланс: </b>{balance[0]} ₽\n\n'
+                                f'💰 <b>Баланс: </b>{int(balance[0])} ₽\n\n'
                                 f'📣 <b>Количество объявлений: </b>{col}\n\n'
                                 f'🏆 <b>Рейтинг:  </b>{average[0]} ({average[1]}) {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}'
                                  , reply_markup=markup, parse_mode='HTML')
