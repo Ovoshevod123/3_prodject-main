@@ -215,8 +215,7 @@ async def use_token_ub(call: CallbackQuery, state: FSMContext):
                                               f'Выберите категории объявления:',reply_markup=markup, parse_mode='html')
     else:
         await call.message.delete()
-        msg = await call.message.answer_photo(photo=(types.FSInputFile(path='C:\\Python\\project\\3_prodject-main\\photo\\username.jpg')),
-                                              caption='У вас не введено имя пользователя, из за этого другие пользователи не смогут перейти в ваш профиль и написать вам.\n\n'
+        msg = await call.message.answer(text='У вас не введено имя пользователя, из за этого другие пользователи не смогут перейти в ваш профиль и написать вам.\n\n'
                                                       'Перейдите в настройки Telegram и введите имя пользователя.')
         await start_def(call.message)
         await asyncio.sleep(30)
