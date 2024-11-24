@@ -1,5 +1,4 @@
 import datetime
-from idlelib.iomenu import encoding
 from aiogram import types, Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -446,7 +445,7 @@ async def account(call: CallbackQuery):
                                 f'👤 <b>Личный кабинет</b>\n\n'
                                 f'💰 <b>Баланс: </b>{int(balance[0])} ₽\n\n'
                                 f'📣 <b>Количество объявлений: </b>{col}\n\n'
-                                f'🏆 <b>Рейтинг:  </b>{average[0]} ({average[1]}) {'⭐' * round(average[0]), encoding.encode('utf-8')}{' ☆' * (5 - round(average[0]))}'
+                                f'🏆 <b>Рейтинг:  </b>{average[0]} ({average[1]}) {'⭐' * round(average[0])}{' ☆' * (5 - round(average[0]))}'
                                  , reply_markup=markup, parse_mode='HTML')
 
 @rt.callback_query(F.data == 'stat')
