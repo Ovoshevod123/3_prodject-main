@@ -29,15 +29,9 @@ async def answer_def(message: Message, bot: Bot):
 
 @rt.message(F.chat.type == 'private')
 async def question_def(message: Message, bot: Bot):
-    text = message.text
+    await bot.forward_message(chat_id=CHANNEL_ID, from_chat_id=message.chat.id, message_id=message.message_id)
     text = (f'Вопрос от пользователя:\n'
             f' @{message.chat.username}\n\n'
-            f'Вопрос:\n'
-            f'<blockquote>{text}</blockquote>\n\n'
             f'<code>/answer {message.chat.id} Ваш ответ</code>')
-    if message.photo != None:
-        photo = message.photo
-        await bot.send_photo(chat_id=CHANNEL_ID, photo=photo[0].file_id, caption=text, parse_mode="HTML")
-    else:
-        await bot.send_message(chat_id=CHANNEL_ID, text=text, parse_mode="HTML")
+    await bot.send_message(chat_id=CHANNEL_ID, text=text, parse_mode="HTML")
     await message.answer(text='✉️ Вопрос отправлен')
