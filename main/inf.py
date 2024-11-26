@@ -3,4 +3,4 @@ ADMIN_LIST = 1696788497
 CHANNEL_ID = '-1002252922437'
 CRYPTO = '248639:AAbMYTiyKrfkRfqS1Zm6x0IOt8D8wUWDYoy'
 REPLY_TO = 2
-GROUP = 'https://t.me/Second_Vaps_TLT'
+GROUP = 'https://t.me/Second_Vaps_TLT/2'
