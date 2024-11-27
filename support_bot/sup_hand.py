@@ -12,7 +12,7 @@ class question(StatesGroup):
 @rt.message(Command('start'), F.chat.type == 'private')
 async def start_def(message: Message):
     await message.answer(text=f'🤖 Это бот тех. поддержки\n\n'
-                              f'Просто напиши свой вопрос и он автоматически отправится администратору😊')
+                              f'Просто напиши свой вопрос и он автоматически отправится администратору')
 
 
 @rt.message(Command('answer'), F.chat.type == 'supergroup')
