@@ -11,7 +11,7 @@ class question(StatesGroup):
 
 @rt.message(Command('start'), F.chat.type == 'private')
 async def start_def(message: Message):
-    await message.answer(text=f'🤖 Это бот тех. поддержки\n\n'
+    await message.answer(text=f'🤖 Это бот Поддержка\n\n'
                               f'Просто напиши свой вопрос и он автоматически отправится администратору')
 
 
@@ -23,7 +23,7 @@ async def answer_def(message: Message, bot: Bot):
         data = (message.text).split(maxsplit=2)
         chat_id = data[1]
         text = data[2]
-        await bot.send_message(chat_id=int(chat_id), text="✉️ Ответ от тех. поддержки:\n\n"
+        await bot.send_message(chat_id=int(chat_id), text="✉️ Ответ от Поддержка:\n\n"
                                                           f"<blockquote>{text}</blockquote>", parse_mode='html')
         await message.answer(text='✉️ Ответ отправлен')
 
