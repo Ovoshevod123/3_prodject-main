@@ -162,7 +162,10 @@ async def fbs_def(message, data_fbs, score, out):
     if fb_score == 0:
         rows = [[InlineKeyboardButton(text='‹ Назад', callback_data='account')]]
         markup = InlineKeyboardMarkup(inline_keyboard=rows)
-        await message.edit_text(text='У вас пока что нету отзывов', reply_markup=markup)
+        try:
+            await message.edit_text(text='У вас пока что нету отзывов', reply_markup=markup)
+        except:
+            await message.answer(text='У вас пока что нету отзывов', reply_markup=markup)
     else:
         frst = 0
         for i in data_fbs:
