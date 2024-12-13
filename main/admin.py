@@ -1,5 +1,5 @@
 import asyncio
-
+from prettytable import PrettyTable
 from aiogram import Bot, types, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -9,6 +9,9 @@ import datetime
 from datetime import date
 import pytz
 import sqlite3
+
+from pyexpat.errors import messages
+
 from hand import del_media,text_def
 from inf import ADMIN_LIST, CHANNEL_ID, REPLY_TO
 
@@ -194,18 +197,38 @@ async def plus_3(message: Message, state: FSMContext):
     await state.clear()
 
 @rt_4.callback_query(F.data == 'db')
-async def ex(call: CallbackQuery):
+async def ex_1(call: CallbackQuery):
+    rows = [[InlineKeyboardButton(text='Отзывы', callback_data='fb_offer')],
+            [InlineKeyboardButton(text='Пользователи', callback_data='users')],
+            [InlineKeyboardButton(text='Объявления', callback_data='users_offer')],
+            [InlineKeyboardButton(text='Забаненые пользователи', callback_data='ban_users')]]
+    markup = InlineKeyboardMarkup(inline_keyboard=rows)
+    await call.message.edit_text(text='1', reply_markup=markup)
+
+@rt_4.callback_query(lambda query: query.data in ['fb_offer','users','users_offer','ban_users'])
+async def ex_2(call: CallbackQuery):
     db = sqlite3.connect('users.db')
     cur = db.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    name = cur.fetchall()
-    for i in name:
-        a = f'{i[0]}\n\n'
-        cur.execute(f"SELECT * FROM {i[0]}")
-        data = cur.fetchall()
-        if data != []:
-            for i in data:
-                a = a + f"{i}\n\n".replace(',', '\n')
-        await call.message.answer(text=f"{a}")
+    cur.execute(f"SELECT * FROM {call.data}")
+    data = cur.fetchall()
+    cur.execute(f'PRAGMA table_info("{call.data}")')
+    col_name = cur.fetchall()
+    field_names = []
+    for i in col_name:
+        field_names.append(i[1])
+    table = PrettyTable()
+    table.field_names = field_names
+    if data != []:
+        for i in data:
+            row = []
+            for ii in i:
+               row.append(ii)
+            table.add_row(row)
+    try:
+        table.del_column('photo')
+    except:
+        pass
+    response = '```\n{}```'.format(table.get_string())
+    await call.message.answer(text=response, parse_mode='Markdown')
     db.commit()
     db.close()
