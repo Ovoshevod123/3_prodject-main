@@ -222,7 +222,7 @@ async def ex_2(call: CallbackQuery):
         for i in data:
             row = []
             for ii in i:
-               row.append(ii)
+                row.append(ii)
             table.add_row(row)
     try:
         table.del_column('photo')
