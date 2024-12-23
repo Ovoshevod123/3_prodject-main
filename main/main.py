@@ -6,13 +6,14 @@ from feedback import rt_3
 from admin import rt_4
 from pay import rt_5
 from ref import rt_6
+from new_member import rt_7
 from bot_cmds import private
 from inf import TOKEN
 
 BOT_TOKEN = TOKEN
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
-dp.include_routers(rt, rt_2, rt_3, rt_4, rt_5, rt_6)
+dp.include_routers(rt, rt_2, rt_3, rt_4, rt_5, rt_6, rt_7)
 
 async def main():
     global Message, Bot
